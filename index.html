@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SafraBook — Sua fazenda no mapa</title>
+  <meta name="description" content="Compare suas safras, veja sua região e interaja com a comunidade do agro. Fotos com GPS, mapa da fazenda e rastreabilidade real.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --green:  #006B3C;
+      --green2: #004D2C;
+      --yellow: #FFCC00;
+      --yellow2:#E6B800;
+      --blue:   #003087;
+      --blue2:  #001D5C;
+      --dark:   #1A1A1A;
+      --gray:   #5A6473;
+      --bg:     #F5F3EE;
+      --white:  #FFFFFF;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--dark);
+      line-height: 1.6;
+    }
+
+    /* ── NAV ── */
+    nav {
+      background: var(--green2);
+      padding: 0.9rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      border-bottom: 3px solid var(--yellow);
+    }
+
+    .logo {
+      color: var(--white);
+      font-size: 1.5rem;
+      font-weight: 900;
+      letter-spacing: -0.5px;
+    }
+    .logo span { color: var(--yellow); }
+
+    .nav-btn {
+      background: var(--yellow);
+      color: var(--dark);
+      padding: 0.5rem 1.25rem;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 0.875rem;
+      text-decoration: none;
+      transition: background 0.2s;
+    }
+    .nav-btn:hover { background: var(--yellow2); }
+
+    /* ── HERO ── */
+    .hero {
+      background: var(--green2);
+      color: var(--white);
+      padding: 4.5rem 2rem 5rem;
+      position: relative;
+      overflow: hidden;
+      text-align: center;
+    }
+
+    /* Linhas de plantação no fundo */
+    .hero::after {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background-image:
+        repeating-linear-gradient(
+          170deg,
+          transparent 0px,
+          transparent 28px,
+          rgba(255,255,255,0.025) 28px,
+          rgba(255,255,255,0.025) 30px
+        );
+      pointer-events: none;
+    }
+
+    /* Mapa do Brasil no fundo */
+    .brazil-map {
+      position: absolute;
+      right: -20px;
+      top: 50%;
+      transform: translateY(-52%);
+      width: 580px;
+      height: auto;
+      opacity: 1;
+      pointer-events: none;
+    }
+
+    .hero-inner {
+      position: relative;
+      z-index: 2;
+      max-width: 720px;
+      margin: 0 auto;
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      background: rgba(255,204,0,0.15);
+      border: 1px solid rgba(255,204,0,0.4);
+      color: var(--yellow);
+      padding: 0.35rem 1rem;
+      border-radius: 100px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+      margin-bottom: 1.75rem;
+    }
+
+    .flag-bar {
+      display: inline-flex;
+      gap: 3px;
+      margin-right: 0.5rem;
+    }
+    .flag-bar span {
+      display: inline-block;
+      width: 4px;
+      height: 12px;
+      border-radius: 2px;
+    }
+    .flag-bar .g { background: #009C3B; }
+    .flag-bar .y { background: #FFDF00; }
+    .flag-bar .b { background: #002776; }
+
+    .hero h1 {
+      font-size: clamp(2.4rem, 5.5vw, 4rem);
+      font-weight: 900;
+      line-height: 1.06;
+      letter-spacing: -2px;
+      margin-bottom: 1.25rem;
+    }
+
+    .hero h1 .yl { color: var(--yellow); }
+    .hero h1 .blu { color: #6EC6FF; }
+
+    .hero p {
+      font-size: 1.125rem;
+      color: rgba(255,255,255,0.72);
+      max-width: 540px;
+      margin: 0 auto 2.75rem;
+      line-height: 1.7;
+    }
+
+    /* ── FORM ── */
+    .form-wrap {
+      display: flex;
+      gap: 0.75rem;
+      max-width: 500px;
+      margin: 0 auto;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .form-wrap input {
+      flex: 1;
+      min-width: 250px;
+      padding: 0.9rem 1.25rem;
+      border-radius: 10px;
+      border: 1px solid rgba(255,255,255,0.2);
+      background: rgba(255,255,255,0.1);
+      color: white;
+      font-size: 1rem;
+      font-family: 'Inter', sans-serif;
+      outline: none;
+      transition: border-color 0.2s, background 0.2s;
+    }
+    .form-wrap input::placeholder { color: rgba(255,255,255,0.45); }
+    .form-wrap input:focus {
+      border-color: var(--yellow);
+      background: rgba(255,255,255,0.15);
+    }
+
+    .form-wrap button {
+      background: var(--yellow);
+      color: var(--dark);
+      padding: 0.9rem 1.75rem;
+      border: none;
+      border-radius: 10px;
+      font-size: 1rem;
+      font-weight: 800;
+      cursor: pointer;
+      font-family: 'Inter', sans-serif;
+      white-space: nowrap;
+      transition: background 0.2s, transform 0.1s;
+    }
+    .form-wrap button:hover { background: var(--yellow2); }
+    .form-wrap button:active { transform: scale(0.98); }
+
+    .form-note {
+      margin-top: 0.9rem;
+      font-size: 0.8rem;
+      color: rgba(255,255,255,0.4);
+    }
+
+    .success-msg {
+      display: none;
+      background: rgba(255,204,0,0.12);
+      border: 1px solid var(--yellow);
+      color: var(--yellow);
+      padding: 1rem 1.5rem;
+      border-radius: 10px;
+      font-weight: 600;
+      margin: 1.25rem auto 0;
+      max-width: 440px;
+    }
+
+    /* ── NÚMEROS ── */
+    .stats {
+      background: var(--blue);
+      padding: 2.5rem 2rem;
+    }
+
+    .stats-inner {
+      max-width: 900px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 1.5rem;
+      text-align: center;
+    }
+
+    .stat-num {
+      font-size: 2.25rem;
+      font-weight: 900;
+      color: var(--yellow);
+      letter-spacing: -1px;
+      line-height: 1;
+      margin-bottom: 0.25rem;
+    }
+
+    .stat-label {
+      font-size: 0.875rem;
+      color: rgba(255,255,255,0.65);
+      font-weight: 500;
+    }
+
+    /* ── FEATURES ── */
+    .section {
+      padding: 5rem 2rem;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    .section-label {
+      text-align: center;
+      font-size: 0.75rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      color: var(--green);
+      margin-bottom: 0.6rem;
+    }
+
+    .section h2 {
+      text-align: center;
+      font-size: clamp(1.75rem, 3vw, 2.5rem);
+      font-weight: 900;
+      letter-spacing: -0.75px;
+      margin-bottom: 3rem;
+    }
+
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 1.25rem;
+    }
+
+    .card {
+      background: var(--white);
+      border-radius: 16px;
+      padding: 1.75rem 2rem;
+      border: 1px solid rgba(0,0,0,0.06);
+      border-left: 4px solid var(--green);
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .card.yellow { border-left-color: var(--yellow2); }
+    .card.blue   { border-left-color: var(--blue); }
+
+    .card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 16px 48px rgba(0,60,30,0.1);
+    }
+
+    .card-icon {
+      font-size: 2rem;
+      margin-bottom: 1rem;
+      display: block;
+    }
+
+    .card h3 {
+      font-size: 1.05rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+    }
+
+    .card p {
+      font-size: 0.9375rem;
+      color: var(--gray);
+      line-height: 1.65;
+    }
+
+    /* ── HOW IT WORKS ── */
+    .how {
+      background: var(--blue);
+      padding: 5rem 2rem;
+      color: var(--white);
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .how::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: linear-gradient(135deg, rgba(0,107,60,0.4) 0%, transparent 60%);
+      pointer-events: none;
+    }
+
+    .how-inner { position: relative; z-index: 2; }
+
+    .how h2 {
+      font-size: clamp(1.75rem, 3vw, 2.5rem);
+      font-weight: 900;
+      letter-spacing: -0.75px;
+      margin-bottom: 3rem;
+    }
+
+    .steps {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 2.5rem;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    .step-num {
+      width: 46px;
+      height: 46px;
+      background: var(--yellow);
+      color: var(--dark);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 900;
+      font-size: 1.2rem;
+      margin: 0 auto 1rem;
+    }
+
+    .step h3 {
+      font-size: 1.05rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+    }
+
+    .step p {
+      font-size: 0.9rem;
+      color: rgba(255,255,255,0.62);
+      line-height: 1.65;
+    }
+
+    /* ── PARA QUEM ── */
+    .para-quem {
+      background: var(--green);
+      padding: 4rem 2rem;
+      color: var(--white);
+      text-align: center;
+    }
+
+    .para-quem h2 {
+      font-size: clamp(1.5rem, 2.5vw, 2rem);
+      font-weight: 900;
+      margin-bottom: 2rem;
+      letter-spacing: -0.5px;
+    }
+
+    .quem-grid {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 0.75rem;
+      max-width: 700px;
+      margin: 0 auto;
+    }
+
+    .quem-tag {
+      background: rgba(255,255,255,0.12);
+      border: 1px solid rgba(255,255,255,0.25);
+      color: var(--white);
+      padding: 0.6rem 1.25rem;
+      border-radius: 100px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    /* ── CTA BOTTOM ── */
+    .cta {
+      padding: 6rem 2rem;
+      text-align: center;
+    }
+
+    .cta h2 {
+      font-size: clamp(1.75rem, 3vw, 2.5rem);
+      font-weight: 900;
+      letter-spacing: -0.75px;
+      margin-bottom: 0.75rem;
+    }
+
+    .cta h2 span { color: var(--green); }
+
+    .cta p {
+      color: var(--gray);
+      font-size: 1.05rem;
+      margin-bottom: 2.25rem;
+    }
+
+    /* ── FOOTER ── */
+    footer {
+      background: var(--green2);
+      border-top: 3px solid var(--yellow);
+      color: rgba(255,255,255,0.5);
+      text-align: center;
+      padding: 2.5rem 2rem;
+      font-size: 0.85rem;
+      line-height: 2;
+    }
+
+    footer strong { color: var(--white); }
+    footer a { color: var(--yellow); text-decoration: none; }
+
+    /* ── MOBILE ── */
+    @media (max-width: 640px) {
+      .hero { padding: 3.5rem 1.25rem 4rem; }
+      .brazil-map { width: 300px; opacity: 0.05; right: -60px; }
+      .form-wrap { flex-direction: column; }
+      .form-wrap input { min-width: 100%; }
+      .section { padding: 3.5rem 1.25rem; }
+      .how { padding: 3.5rem 1.25rem; }
+    }
+  </style>
+  <!-- Vercel Analytics -->
+  <script defer src="/_vercel/insights/script.js"></script>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="logo">Safra<span>Book</span></div>
+  <a href="#lista" class="nav-btn">Quero acesso</a>
+</nav>
+
+<!-- HERO -->
+<section class="hero" id="lista">
+
+  <!-- Mapa do Brasil -->
+  <svg class="brazil-map" viewBox="0 0 500 560" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <defs>
+      <radialGradient id="mapFade" cx="42%" cy="48%" r="55%">
+        <stop offset="40%" stop-color="white" stop-opacity="1"/>
+        <stop offset="100%" stop-color="white" stop-opacity="0"/>
+      </radialGradient>
+      <mask id="mFade"><rect width="500" height="560" fill="url(#mapFade)"/></mask>
+    </defs>
+    <g mask="url(#mFade)">
+      <!-- Silhueta do Brasil com coordenadas proporcionais reais -->
+      <path
+        fill="#FFCC00" fill-opacity="0.13"
+        stroke="#FFCC00" stroke-width="1.5" stroke-opacity="0.4"
+        d="
+          M 308,18
+          C 328,22 350,32 366,50
+          C 372,58 372,72 368,88
+          C 364,102 372,114 385,126
+          C 398,138 412,148 426,162
+          C 440,176 448,192 452,210
+          C 456,228 458,242 452,256
+          C 446,268 435,278 428,292
+          C 418,310 408,328 396,348
+          C 384,368 370,388 352,408
+          C 334,428 312,446 288,460
+          C 264,474 240,484 215,490
+          C 192,496 170,492 150,482
+          C 132,472 118,458 108,440
+          C 100,424 98,406 104,390
+          C 110,374 120,360 118,344
+          C 116,328 104,314 92,298
+          C 80,282 68,265 62,246
+          C 56,228 56,210 60,192
+          C 64,174 70,156 78,138
+          C 86,120 96,103 110,88
+          C 124,73 140,60 158,48
+          C 176,36 196,26 218,20
+          C 240,14 264,12 288,14
+          Z
+        "
+      />
+      <!-- Borda do nordeste destacada — o "bico" do Brasil -->
+      <path
+        fill="none" stroke="#FFCC00" stroke-width="2" stroke-opacity="0.25"
+        d="M 385,126 C 410,148 432,172 452,210 C 458,226 458,242 450,256"
+      />
+      <!-- Rio Amazonas -->
+      <path fill="none" stroke="#FFCC00" stroke-width="1" stroke-opacity="0.18"
+        d="M 75,155 Q 140,145 210,155 Q 280,165 348,148"/>
+      <!-- Trópico de Capricórnio -->
+      <line x1="82" y1="378" x2="448" y2="378"
+        stroke="#FFCC00" stroke-width="0.6" stroke-opacity="0.1" stroke-dasharray="5,9"/>
+      <!-- Brasília ★ -->
+      <circle cx="248" cy="318" r="4.5" fill="#FFCC00" fill-opacity="0.55"/>
+      <circle cx="248" cy="318" r="8" fill="none" stroke="#FFCC00" stroke-width="0.8" stroke-opacity="0.3"/>
+      <!-- Pins de fazendas por região -->
+      <circle cx="195" cy="268" r="3.5" fill="#FFCC00" fill-opacity="0.5"/>
+      <circle cx="228" cy="248" r="2.5" fill="#FFCC00" fill-opacity="0.4"/>
+      <circle cx="255" cy="290" r="3"   fill="#FFCC00" fill-opacity="0.45"/>
+      <circle cx="175" cy="312" r="2.5" fill="#FFCC00" fill-opacity="0.4"/>
+      <circle cx="215" cy="335" r="3"   fill="#FFCC00" fill-opacity="0.42"/>
+      <circle cx="188" cy="392" r="3"   fill="#FFCC00" fill-opacity="0.4"/>
+      <circle cx="168" cy="418" r="2.5" fill="#FFCC00" fill-opacity="0.35"/>
+      <circle cx="298" cy="348" r="3"   fill="#FFCC00" fill-opacity="0.4"/>
+      <circle cx="318" cy="322" r="2.5" fill="#FFCC00" fill-opacity="0.35"/>
+      <circle cx="370" cy="228" r="2.5" fill="#FFCC00" fill-opacity="0.32"/>
+      <circle cx="350" cy="255" r="2"   fill="#FFCC00" fill-opacity="0.28"/>
+      <circle cx="288" cy="188" r="2.5" fill="#FFCC00" fill-opacity="0.28"/>
+    </g>
+  </svg>
+
+  <div class="hero-inner">
+    <div class="hero-badge">
+      <div class="flag-bar">
+        <span class="g"></span><span class="y"></span><span class="b"></span>
+      </div>
+      Feito para o agro brasileiro · Em breve
+    </div>
+
+    <h1>
+      Sua fazenda<br>
+      <span class="yl">no mapa.</span><br>
+      <span class="blu">Compare, veja e conecte.</span>
+    </h1>
+
+    <p>
+      Compare suas safras, veja o que acontece na sua região e interaja
+      com a comunidade do agro. Fotos com GPS, mapa da propriedade
+      e rastreabilidade real.
+    </p>
+
+    <form class="form-wrap" id="heroForm">
+      <input type="email" name="email" placeholder="Seu melhor email" required>
+      <button type="submit">Quero acesso antecipado</button>
+    </form>
+    <p class="form-note">Grátis para começar · Sem spam · Sem compromisso</p>
+    <div class="success-msg" id="heroSuccess">
+      ✅ Cadastro feito! Te avisamos assim que o SafraBook estiver pronto.
+    </div>
+  </div>
+</section>
+
+<!-- NÚMEROS -->
+<section class="stats">
+  <div class="stats-inner">
+    <div>
+      <div class="stat-num">5,5 mi</div>
+      <div class="stat-label">propriedades rurais no Brasil</div>
+    </div>
+    <div>
+      <div class="stat-num">R$ 1,3 tri</div>
+      <div class="stat-label">PIB do agronegócio em 2024</div>
+    </div>
+    <div>
+      <div class="stat-num">Dez/2025</div>
+      <div class="stat-label">EUDR em vigor — rastreabilidade urgente</div>
+    </div>
+    <div>
+      <div class="stat-num">100%</div>
+      <div class="stat-label">grátis para começar</div>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section class="section">
+  <p class="section-label">Por que o SafraBook</p>
+  <h2>Tudo que falta no agro,<br>num só lugar</h2>
+  <div class="cards">
+
+    <div class="card">
+      <span class="card-icon">📸</span>
+      <h3>Fotos com GPS automático</h3>
+      <p>Tire fotos pelo app e elas aparecem no lugar certo da fazenda no mapa. Sem precisar configurar nada. Funciona offline.</p>
+    </div>
+
+    <div class="card yellow">
+      <span class="card-icon">🗓️</span>
+      <h3>Compare safras ano a ano</h3>
+      <p>Veja o mesmo talhão em 2024 e 2025 lado a lado. Identifique problemas, evolução e o que mudou com seus próprios olhos.</p>
+    </div>
+
+    <div class="card blue">
+      <span class="card-icon">🌍</span>
+      <h3>Veja sua região no mapa</h3>
+      <p>Acompanhe o que está acontecendo ao redor, cotações do dia e o que outros produtores da região estão compartilhando.</p>
+    </div>
+
+    <div class="card yellow">
+      <span class="card-icon">👥</span>
+      <h3>Comunidade do agro</h3>
+      <p>Feed, stories e conversas com produtores, agrônomos e prestadores. Conecte-se com quem entende do campo.</p>
+    </div>
+
+    <div class="card blue">
+      <span class="card-icon">📄</span>
+      <h3>Rastreabilidade EUDR</h3>
+      <p>Gere laudos de conformidade ambiental para exportação em minutos. O que levava semanas agora é automático.</p>
+    </div>
+
+    <div class="card">
+      <span class="card-icon">📊</span>
+      <h3>Cotações em tempo real</h3>
+      <p>Soja, milho, boi gordo, dólar e futuros B3. Por estado e região — atualizado todo dia com fonte CEPEA.</p>
+    </div>
+
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="how">
+  <div class="how-inner">
+    <h2>Como funciona</h2>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <h3>Cadastre sua fazenda</h3>
+        <p>Informe o número do CAR e a fazenda aparece delimitada no mapa automaticamente. De graça, em segundos.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <h3>Tire fotos pelo app</h3>
+        <p>Câmera com GPS salva cada foto no lugar certo da propriedade. Funciona mesmo sem sinal.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <h3>Compare, explore e conecte</h3>
+        <p>Veja o histórico da fazenda, compare com anos anteriores e conecte-se com a comunidade do agro brasileiro.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PARA QUEM -->
+<section class="para-quem">
+  <h2>Para quem é o SafraBook</h2>
+  <div class="quem-grid">
+    <div class="quem-tag">🐄 Pecuaristas</div>
+    <div class="quem-tag">🌾 Produtores de grãos</div>
+    <div class="quem-tag">🚜 Agricultores familiares</div>
+    <div class="quem-tag">🌿 Agrônomos e técnicos</div>
+    <div class="quem-tag">🤝 Cooperativas</div>
+    <div class="quem-tag">📦 Frigoríficos e tradings</div>
+    <div class="quem-tag">🐎 Criadores de cavalos</div>
+    <div class="quem-tag">🏦 Bancos e seguradoras</div>
+  </div>
+</section>
+
+<!-- CTA BOTTOM -->
+<section class="cta">
+  <h2>Seja o primeiro<br><span>a usar o SafraBook</span></h2>
+  <p>Acesso antecipado gratuito para os primeiros produtores cadastrados.</p>
+  <form class="form-wrap" id="ctaForm" style="justify-content:center">
+    <input type="email" name="email" placeholder="Seu email" required>
+    <button type="submit">Entrar na lista de espera</button>
+  </form>
+  <div class="success-msg" id="ctaSuccess" style="margin-top:1.25rem">
+    ✅ Perfeito! Te avisamos quando estiver pronto.
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <strong>SafraBook</strong> — O agro brasileiro no mapa<br>
+  <a href="https://safrabook.com.br">safrabook.com.br</a> ·
+  <a href="https://instagram.com/safrabook.agro">@safrabook.agro</a> ·
+  <a href="https://youtube.com/@safrabook">YouTube @safrabook</a><br>
+  safrabook.app@gmail.com
+</footer>
+
+<script>
+  document.querySelectorAll('a[href^="#"]').forEach(a => {
+    a.addEventListener('click', e => {
+      e.preventDefault();
+      document.querySelector(a.getAttribute('href'))?.scrollIntoView({ behavior: 'smooth' });
+    });
+  });
+
+  function handleForm(formId, successId) {
+    const form = document.getElementById(formId);
+    const success = document.getElementById(successId);
+    if (!form) return;
+    form.addEventListener('submit', async e => {
+      e.preventDefault();
+      const btn = form.querySelector('button');
+      btn.textContent = 'Enviando...';
+      btn.disabled = true;
+      const res = await fetch('https://formspree.io/f/xjgqvnpl', {
+        method: 'POST',
+        body: new FormData(form),
+        headers: { 'Accept': 'application/json' }
+      });
+      if (res.ok) {
+        form.style.display = 'none';
+        success.style.display = 'block';
+      } else {
+        btn.textContent = 'Tente novamente';
+        btn.disabled = false;
+      }
+    });
+  }
+
+  handleForm('heroForm', 'heroSuccess');
+  handleForm('ctaForm', 'ctaSuccess');
+</script>
+
+</body>
+</html>
