@@ -450,6 +450,31 @@
     footer strong { color: var(--white); }
     footer a { color: var(--yellow); text-decoration: none; }
 
+    /* ── LGPD ── */
+    .lgpd-check {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.5rem;
+      font-size: 0.78rem;
+      color: rgba(255,255,255,0.5);
+      cursor: pointer;
+      max-width: 460px;
+      margin: 0.75rem auto 0;
+      text-align: left;
+      line-height: 1.5;
+    }
+    .lgpd-check input[type="checkbox"] {
+      margin-top: 2px;
+      flex-shrink: 0;
+      accent-color: var(--yellow);
+      width: 14px;
+      height: 14px;
+      cursor: pointer;
+    }
+    .lgpd-check a { color: var(--yellow); text-decoration: underline; text-underline-offset: 2px; }
+    .lgpd-light { color: var(--gray); }
+    .lgpd-light a { color: var(--green); }
+
     /* ── MOBILE ── */
     @media (max-width: 640px) {
       .hero { padding: 3.5rem 1.25rem 4rem; }
@@ -547,9 +572,15 @@
       e rastreabilidade real.
     </p>
 
-    <form class="form-wrap" id="heroForm">
-      <input type="email" name="email" placeholder="Seu melhor email" required>
-      <button type="submit">Quero acesso antecipado</button>
+    <form id="heroForm">
+      <div class="form-wrap">
+        <input type="email" name="email" placeholder="Seu melhor email" required>
+        <button type="submit">Quero acesso antecipado</button>
+      </div>
+      <label class="lgpd-check">
+        <input type="checkbox" name="lgpd_aceite" required>
+        Li e concordo com os <a href="/termos.html" target="_blank">Termos de Uso</a> e <a href="/privacidade.html" target="_blank">Política de Privacidade</a>
+      </label>
     </form>
     <p class="form-note">Grátis para começar · Sem spam · Sem compromisso</p>
     <div class="success-msg" id="heroSuccess">
@@ -668,9 +699,15 @@
 <section class="cta">
   <h2>Seja o primeiro<br><span>a usar o SafraBook</span></h2>
   <p>Acesso antecipado gratuito para os primeiros produtores cadastrados.</p>
-  <form class="form-wrap" id="ctaForm" style="justify-content:center">
-    <input type="email" name="email" placeholder="Seu email" required>
-    <button type="submit">Entrar na lista de espera</button>
+  <form id="ctaForm">
+    <div class="form-wrap" style="justify-content:center">
+      <input type="email" name="email" placeholder="Seu email" required>
+      <button type="submit">Entrar na lista de espera</button>
+    </div>
+    <label class="lgpd-check lgpd-light">
+      <input type="checkbox" name="lgpd_aceite" required>
+      Li e concordo com os <a href="/termos.html" target="_blank">Termos de Uso</a> e <a href="/privacidade.html" target="_blank">Política de Privacidade</a>
+    </label>
   </form>
   <div class="success-msg" id="ctaSuccess" style="margin-top:1.25rem">
     ✅ Perfeito! Te avisamos quando estiver pronto.
