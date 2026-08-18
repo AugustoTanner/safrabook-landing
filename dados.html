@@ -113,6 +113,12 @@
     .tcol-var { width: 90px; text-align: right; font-size: 0.85rem; font-weight: 700; }
     .temoji { font-size: 1.15rem; }
     .tref { font-size: 0.72rem; color: var(--gray); }
+    .tlinha-clicavel { cursor: pointer; }
+    .tchevron { font-size: 0.7rem; color: var(--gray); width: 10px; }
+    .tlinha-regional {
+      display: flex; align-items: center; padding: 0.55rem 1.25rem 0.55rem 2.5rem;
+      background: rgba(0,107,60,0.04); border-bottom: 1px solid #F0EEE8; font-size: 0.82rem;
+    }
 
     /* ── SAFRA: SELETOR + TABELA ── */
     .produto-select {
@@ -132,18 +138,20 @@
       font-size: 0.78rem; font-weight: 700; padding: 0.3rem 0.8rem; border-radius: 100px;
       margin-bottom: 1rem;
     }
+    .safra-badge-var { font-weight: 500; margin-left: 0.2rem; }
 
     .uf-tabela { background: var(--white); border-radius: 14px; overflow: hidden; border: 1px solid rgba(0,0,0,0.06); margin-bottom: 2rem; }
     .uf-linha { display: flex; align-items: center; padding: 0.6rem 1.25rem; border-bottom: 1px solid #F0EEE8; font-size: 0.88rem; }
     .uf-linha:last-child { border-bottom: none; }
     .uf-linha.head { background: #FAF9F6; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; color: var(--gray); }
     .uf-linha:not(.head):nth-child(even) { background: rgba(0,107,60,0.025); }
-    .uf-col-uf { width: 70px; font-weight: 800; }
+    .uf-col-uf { width: 60px; font-weight: 800; }
     .uf-col-barra { flex: 1; padding-right: 1rem; }
     .barra-bg { background: #F0EEE8; border-radius: 4px; height: 8px; overflow: hidden; }
     .barra-fill { background: var(--green); height: 100%; border-radius: 4px; }
-    .uf-col-num { width: 110px; text-align: right; font-weight: 700; font-variant-numeric: tabular-nums; }
+    .uf-col-num { width: 95px; text-align: right; font-weight: 700; font-variant-numeric: tabular-nums; }
     .uf-col-num small { font-weight: 500; color: var(--gray); font-size: 0.72rem; }
+    .uf-col-var { width: 85px; text-align: right; font-size: 0.8rem; font-weight: 700; }
 
     /* ── GRÁFICO TENDÊNCIA ── */
     .chart-wrap { background: var(--white); border-radius: 14px; border: 1px solid rgba(0,0,0,0.06); padding: 1.5rem 1.25rem 1rem; position: relative; }
@@ -368,25 +376,67 @@ async function carregarChicago() {
   }
 }
 
-/* ── CEPEA ── */
+/* ── CEPEA (com preço regional expansível — mesmo dado do app) ── */
+const PREFIXO_REGIONAL = { soja: 'soja_', boi_gordo: 'boi_', milho: 'milho_' };
+let cepeaRegionalCache = null;
+
 async function carregarCepea() {
   const tabela = document.getElementById('cepeaTabela');
   try {
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/cotacoes_cache?grupo=eq.cepea_nacional&order=ordem&select=*`, {
-      headers: { apikey: SUPABASE_ANON, Authorization: `Bearer ${SUPABASE_ANON}` },
-    });
-    const dados = await res.json();
+    const [resNacional, resRegional] = await Promise.all([
+      fetch(`${SUPABASE_URL}/rest/v1/cotacoes_cache?grupo=eq.cepea_nacional&order=ordem&select=*`, {
+        headers: { apikey: SUPABASE_ANON, Authorization: `Bearer ${SUPABASE_ANON}` },
+      }),
+      fetch(`${SUPABASE_URL}/rest/v1/cotacoes_cache?grupo=eq.cepea_regional&order=ordem&select=*`, {
+        headers: { apikey: SUPABASE_ANON, Authorization: `Bearer ${SUPABASE_ANON}` },
+      }),
+    ]);
+    const dados = await resNacional.json();
+    cepeaRegionalCache = await resRegional.json();
     if (!Array.isArray(dados) || !dados.length) throw new Error('sem dados');
-    tabela.innerHTML = dados.map(c => `
-      <div class="tlinha">
-        <div class="tcol-nome"><span class="temoji">${c.emoji}</span><div><div>${c.nome}</div><div class="tref">${c.referencia}</div></div></div>
-        <div class="tcol-preco">R$ ${fmt(c.preco)}<div class="tref">${c.unidade_label}</div></div>
-        <div class="tcol-var">${variacaoHtml(c.variacao)}</div>
-      </div>
-    `).join('');
+
+    tabela.innerHTML = dados.map(c => {
+      const prefixo = PREFIXO_REGIONAL[c.produto];
+      const regionais = prefixo ? (cepeaRegionalCache || []).filter(r => r.produto.startsWith(prefixo)) : [];
+      const temRegional = regionais.length > 0;
+      return `
+        <div class="tlinha ${temRegional ? 'tlinha-clicavel' : ''}" ${temRegional ? `onclick="toggleRegional(this, '${c.produto}')"` : ''}>
+          <div class="tcol-nome">
+            ${temRegional ? '<span class="tchevron">▸</span>' : ''}
+            <span class="temoji">${c.emoji}</span><div><div>${c.nome}</div><div class="tref">${c.referencia}</div></div>
+          </div>
+          <div class="tcol-preco">R$ ${fmt(c.preco)}<div class="tref">${c.unidade_label}</div></div>
+          <div class="tcol-var">${variacaoHtml(c.variacao)}</div>
+        </div>
+        <div class="tregional-host" data-produto="${c.produto}"></div>
+      `;
+    }).join('');
   } catch (e) {
     tabela.innerHTML = '<div class="erro-msg">Não foi possível carregar o CEPEA agora.</div>';
   }
+}
+
+function toggleRegional(linhaEl, produto) {
+  const chevron = linhaEl.querySelector('.tchevron');
+  const host = linhaEl.nextElementSibling;
+  const aberto = host.dataset.aberto === '1';
+  if (aberto) {
+    host.innerHTML = '';
+    host.dataset.aberto = '0';
+    if (chevron) chevron.textContent = '▸';
+    return;
+  }
+  const prefixo = PREFIXO_REGIONAL[produto];
+  const regionais = (cepeaRegionalCache || []).filter(r => r.produto.startsWith(prefixo));
+  host.innerHTML = regionais.map(r => `
+    <div class="tlinha-regional">
+      <div class="tcol-nome">📍 ${r.referencia}</div>
+      <div class="tcol-preco">R$ ${fmt(r.preco)}</div>
+      <div class="tcol-var">${variacaoHtml(r.variacao)}</div>
+    </div>
+  `).join('');
+  host.dataset.aberto = '1';
+  if (chevron) chevron.textContent = '▾';
 }
 
 /* ── SAFRA POR ESTADO ── */
@@ -458,30 +508,52 @@ async function selecionarProduto(produto) {
   const linhas = safrasCache[produto];
   if (!linhas.length) { conteudo.innerHTML = '<div class="erro-msg">Sem dados pra essa cultura ainda.</div>'; return; }
 
-  const safraMaisRecente = linhas.map(l => l.safra).sort().at(-1);
+  const safrasUnicas = [...new Set(linhas.map(l => l.safra))].sort();
+  const safraMaisRecente = safrasUnicas.at(-1);
+  const idxRecente = safrasUnicas.indexOf(safraMaisRecente);
+  const safraAnterior = idxRecente > 0 ? safrasUnicas[idxRecente - 1] : null;
+
   const porEstado = linhas.filter(l => l.safra === safraMaisRecente && l.producao_mil_ton > 0)
     .sort((a, b) => b.producao_mil_ton - a.producao_mil_ton);
   const maxProducao = Math.max(...porEstado.map(l => l.producao_mil_ton));
+
+  const producaoAnteriorPorUf = {};
+  if (safraAnterior) {
+    linhas.filter(l => l.safra === safraAnterior).forEach(l => { producaoAnteriorPorUf[l.uf] = l.producao_mil_ton; });
+  }
 
   const porAno = {};
   linhas.forEach(l => { porAno[l.safra] = (porAno[l.safra] || 0) + (l.producao_mil_ton || 0); });
   const anos = Object.keys(porAno).sort();
 
+  const variacaoNacional = safraAnterior && porAno[safraAnterior]
+    ? ((porAno[safraMaisRecente] - porAno[safraAnterior]) / porAno[safraAnterior]) * 100
+    : null;
+
   conteudo.innerHTML = `
-    <div class="safra-badge">Safra ${safraMaisRecente}</div>
+    <div class="safra-badge">
+      Safra ${safraMaisRecente}
+      ${variacaoNacional !== null ? `<span class="safra-badge-var">· Brasil ${variacaoHtml(variacaoNacional)} vs ${safraAnterior}</span>` : ''}
+    </div>
     <div class="uf-tabela">
       <div class="uf-linha head">
         <div class="uf-col-uf">UF</div>
         <div class="uf-col-barra">Produção</div>
         <div class="uf-col-num">Mil ton</div>
+        <div class="uf-col-var">vs ${safraAnterior || '—'}</div>
       </div>
-      ${porEstado.map(l => `
+      ${porEstado.map(l => {
+        const anteriorValor = producaoAnteriorPorUf[l.uf];
+        const variacaoUf = anteriorValor ? ((l.producao_mil_ton - anteriorValor) / anteriorValor) * 100 : null;
+        return `
         <div class="uf-linha">
           <div class="uf-col-uf">${l.uf}</div>
           <div class="uf-col-barra"><div class="barra-bg"><div class="barra-fill" style="width:${(l.producao_mil_ton / maxProducao * 100).toFixed(1)}%"></div></div></div>
           <div class="uf-col-num">${fmt(l.producao_mil_ton, 0)}</div>
+          <div class="uf-col-var">${variacaoUf !== null ? variacaoHtml(variacaoUf) : '<span class="var-flat">—</span>'}</div>
         </div>
-      `).join('')}
+      `;
+      }).join('')}
     </div>
     <div class="chart-wrap">
       <div class="chart-title">Produção nacional por safra (mil toneladas)</div>
