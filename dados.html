@@ -405,25 +405,43 @@ const NOME_PRODUTO = {
 let safrasCache = {}; // produto -> linhas
 let produtoAtivo = null;
 
+// O Supabase devolve no máximo 1000 linhas por request (max-rows do projeto) —
+// alguns produtos (milho, feijão, arroz...) passam disso, então precisa paginar
+// via header Range até vir uma página incompleta (sinal de que acabou).
+async function buscarTudoPaginado(url) {
+  const PAGINA = 1000;
+  let tudo = [];
+  let inicio = 0;
+  while (true) {
+    const res = await fetch(url, {
+      headers: {
+        apikey: SUPABASE_ANON, Authorization: `Bearer ${SUPABASE_ANON}`,
+        Range: `${inicio}-${inicio + PAGINA - 1}`,
+      },
+    });
+    const pagina = await res.json();
+    if (!Array.isArray(pagina) || pagina.length === 0) break;
+    tudo = tudo.concat(pagina);
+    if (pagina.length < PAGINA) break;
+    inicio += PAGINA;
+  }
+  return tudo;
+}
+
 async function carregarProdutosDisponiveis() {
   const sel = document.getElementById('produtoSelect');
-  try {
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/safras_historico?select=produto&group=produto`, {
-      headers: { apikey: SUPABASE_ANON, Authorization: `Bearer ${SUPABASE_ANON}` },
-    });
-    let produtos = await res.json();
-    produtos = [...new Set(produtos.map(p => p.produto))]
-      .filter(p => NOME_PRODUTO[p])
-      .sort((a, b) => NOME_PRODUTO[a].localeCompare(NOME_PRODUTO[b]));
-    if (!produtos.length) throw new Error('sem dados ainda');
-    sel.innerHTML = produtos.map(p => `<button class="produto-btn" data-produto="${p}">${NOME_PRODUTO[p]}</button>`).join('');
-    sel.querySelectorAll('.produto-btn').forEach(btn => {
-      btn.addEventListener('click', () => selecionarProduto(btn.dataset.produto));
-    });
-    selecionarProduto(produtos.includes('soja') ? 'soja' : produtos[0]);
-  } catch (e) {
-    sel.innerHTML = '<div class="erro-msg">Dados de safra ainda não disponíveis.</div>';
-  }
+  // A lista de produtos é a mesma que o pipeline processa (NOME_PRODUTO) — não
+  // precisa perguntar pro banco quais existem. Evita 2 problemas: PostgREST não
+  // suporta "group by" via query string simples (dava erro PGRST100), e buscar
+  // todas as linhas só pra extrair produto distinto esbarraria no limite padrão
+  // de linhas por request do Supabase antes de listar tudo.
+  const produtos = Object.keys(NOME_PRODUTO)
+    .sort((a, b) => NOME_PRODUTO[a].localeCompare(NOME_PRODUTO[b]));
+  sel.innerHTML = produtos.map(p => `<button class="produto-btn" data-produto="${p}">${NOME_PRODUTO[p]}</button>`).join('');
+  sel.querySelectorAll('.produto-btn').forEach(btn => {
+    btn.addEventListener('click', () => selecionarProduto(btn.dataset.produto));
+  });
+  selecionarProduto('soja');
 }
 
 async function selecionarProduto(produto) {
@@ -433,10 +451,9 @@ async function selecionarProduto(produto) {
   conteudo.innerHTML = '<div class="loading-msg">Carregando...</div>';
 
   if (!safrasCache[produto]) {
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/safras_historico?produto=eq.${produto}&select=*`, {
-      headers: { apikey: SUPABASE_ANON, Authorization: `Bearer ${SUPABASE_ANON}` },
-    });
-    safrasCache[produto] = await res.json();
+    safrasCache[produto] = await buscarTudoPaginado(
+      `${SUPABASE_URL}/rest/v1/safras_historico?produto=eq.${produto}&select=*`
+    );
   }
   const linhas = safrasCache[produto];
   if (!linhas.length) { conteudo.innerHTML = '<div class="erro-msg">Sem dados pra essa cultura ainda.</div>'; return; }
