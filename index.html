@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>SafraBook — Sua fazenda no mapa</title>
   <meta name="description" content="Compare suas safras, veja sua região e interaja com a comunidade do agro. Fotos com GPS, mapa da fazenda e rastreabilidade real.">
+  <link rel="icon" href="/favicon.png" type="image/png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <style>
@@ -316,6 +317,30 @@
       color: var(--gray);
       line-height: 1.65;
     }
+
+    /* ── GALERIA (screenshots reais) ── */
+    .galeria {
+      background: var(--white);
+      padding: 4.5rem 2rem;
+    }
+    .galeria-inner { max-width: 1100px; margin: 0 auto; }
+    .galeria-scroll {
+      display: flex; gap: 1.5rem; overflow-x: auto;
+      padding: 0.5rem 0 1rem;
+      scroll-snap-type: x mandatory;
+    }
+    .galeria-item {
+      flex: 0 0 auto; width: 220px; scroll-snap-align: start;
+      text-align: center;
+    }
+    .galeria-phone {
+      border-radius: 20px; overflow: hidden;
+      border: 6px solid var(--dark);
+      box-shadow: 0 20px 50px rgba(0,0,0,0.18);
+      margin-bottom: 0.9rem;
+    }
+    .galeria-phone img { display: block; width: 100%; height: auto; }
+    .galeria-item p { font-size: 0.85rem; color: var(--gray); line-height: 1.5; }
 
     /* ── HOW IT WORKS ── */
     .how {
@@ -656,6 +681,32 @@
       <p>Soja, milho, boi gordo, dólar e futuros B3. Por estado e região — atualizado todo dia com fonte CEPEA.</p>
     </div>
 
+  </div>
+</section>
+
+<!-- GALERIA -->
+<section class="galeria">
+  <div class="galeria-inner">
+    <p class="section-label" style="text-align:center">Direto do app</p>
+    <h2 style="text-align:center">Veja como funciona</h2>
+    <div class="galeria-scroll">
+      <div class="galeria-item">
+        <div class="galeria-phone"><img src="/img/screenshot-mapa.jpg" alt="Mapa da fazenda no SafraBook" loading="lazy"></div>
+        <p>Sua fazenda no mapa, com verificação automática do CAR</p>
+      </div>
+      <div class="galeria-item">
+        <div class="galeria-phone"><img src="/img/screenshot-camera-gps.jpg" alt="Câmera com GPS do SafraBook" loading="lazy"></div>
+        <p>Fotos com GPS de alta precisão, direto na fazenda</p>
+      </div>
+      <div class="galeria-item">
+        <div class="galeria-phone"><img src="/img/screenshot-cambio.jpg" alt="Cotações de câmbio no SafraBook" loading="lazy"></div>
+        <p>Câmbio, Chicago e CEPEA em tempo real</p>
+      </div>
+      <div class="galeria-item">
+        <div class="galeria-phone"><img src="/img/screenshot-cepea.jpg" alt="Preços CEPEA por região no SafraBook" loading="lazy"></div>
+        <p>Preço por região, sem sair do app</p>
+      </div>
+    </div>
   </div>
 </section>
 
