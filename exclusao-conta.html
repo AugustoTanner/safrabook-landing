@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Exclusão de Conta — SafraBook</title>
+  <link rel="icon" href="/favicon.png" type="image/png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --green:  #006B3C;
+      --green2: #004D2C;
+      --yellow: #FFCC00;
+      --yellow2:#E6B800;
+      --dark:   #1A1A1A;
+      --gray:   #5A6473;
+      --bg:     #F5F3EE;
+      --white:  #FFFFFF;
+    }
+    body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--dark); line-height: 1.7; }
+
+    nav {
+      background: var(--green2);
+      padding: 0.9rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 3px solid var(--yellow);
+    }
+    .logo { color: var(--white); font-size: 1.5rem; font-weight: 900; letter-spacing: -0.5px; text-decoration: none; }
+    .logo span { color: var(--yellow); }
+    .nav-btn {
+      background: var(--yellow); color: var(--dark);
+      padding: 0.5rem 1.25rem; border-radius: 8px;
+      font-weight: 700; font-size: 0.875rem; text-decoration: none;
+    }
+
+    .page-header {
+      background: var(--green2);
+      color: var(--white);
+      padding: 3rem 2rem;
+      text-align: center;
+    }
+    .page-header h1 { font-size: 2rem; font-weight: 900; margin-bottom: 0.5rem; }
+    .page-header p { color: rgba(255,255,255,0.6); font-size: 0.9rem; }
+
+    .content {
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 3rem 2rem 5rem;
+    }
+
+    .section-title {
+      font-size: 1rem;
+      font-weight: 800;
+      color: var(--green);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 0.5rem;
+      margin-top: 2.5rem;
+    }
+    .section-title:first-child { margin-top: 0; }
+
+    p { margin-bottom: 1rem; color: var(--gray); font-size: 0.95rem; }
+    ul, ol { margin: 0.5rem 0 1rem 1.5rem; color: var(--gray); font-size: 0.95rem; }
+    ul li, ol li { margin-bottom: 0.4rem; }
+    a { color: var(--green); }
+    strong { color: var(--dark); }
+
+    .highlight {
+      background: rgba(0,107,60,0.06);
+      border-left: 3px solid var(--green);
+      padding: 1rem 1.25rem;
+      border-radius: 0 8px 8px 0;
+      margin: 1.5rem 0;
+      font-size: 0.9rem;
+      color: var(--dark);
+    }
+
+    .btn-email {
+      display: inline-block;
+      background: var(--green);
+      color: var(--white);
+      text-decoration: none;
+      font-weight: 700;
+      padding: 0.9rem 1.5rem;
+      border-radius: 10px;
+      margin: 0.5rem 0 1.5rem;
+    }
+
+    footer {
+      background: var(--green2);
+      border-top: 3px solid var(--yellow);
+      color: rgba(255,255,255,0.5);
+      text-align: center;
+      padding: 2rem;
+      font-size: 0.85rem;
+    }
+    footer strong { color: var(--white); }
+    footer a { color: var(--yellow); text-decoration: none; }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a href="/" class="logo">Safra<span>Book</span></a>
+  <a href="/#lista" class="nav-btn">Quero acesso</a>
+</nav>
+
+<div class="page-header">
+  <h1>Exclusão de Conta e Dados</h1>
+  <p>SafraBook — como pedir a exclusão da sua conta</p>
+</div>
+
+<div class="content">
+
+  <div class="highlight">
+    Você pode pedir a exclusão da sua conta no <strong>SafraBook</strong> (aplicativo desenvolvido por Augusto Lemos de Melo Tanner) e dos dados associados a ela a qualquer momento, de graça, seguindo os passos abaixo.
+  </div>
+
+  <p class="section-title">Como pedir a exclusão</p>
+  <ol>
+    <li>Envie um e-mail para <a href="mailto:contato@safrabook.com.br">contato@safrabook.com.br</a> com o assunto <strong>"Exclusão de conta"</strong>.</li>
+    <li>Informe o e-mail cadastrado na sua conta do SafraBook (pra localizarmos seus dados).</li>
+    <li>Se quiser excluir só parte dos seus dados (por exemplo, uma foto ou documento específico) em vez da conta inteira, descreva o que quer remover no mesmo e-mail.</li>
+  </ol>
+  <p>Processamos o pedido em até <strong>30 dias</strong> e confirmamos por e-mail quando a exclusão for concluída.</p>
+
+  <p class="section-title">O que é excluído</p>
+  <ul>
+    <li>Dados de cadastro: nome, e-mail, telefone, CEP/endereço</li>
+    <li>Fotos e localização (GPS) associadas às suas fotos</li>
+    <li>Documentos enviados (recibo do CAR, documentos da fazenda)</li>
+    <li>Mensagens enviadas e recebidas no chat interno</li>
+    <li>Anúncios publicados no Mercado</li>
+  </ul>
+
+  <p class="section-title">O que pode ser mantido</p>
+  <p>Alguns registros podem ser mantidos por período adicional quando exigido por lei (por exemplo, obrigações fiscais ligadas a uma assinatura paga, quando esse recurso estiver ativo) ou quando necessário para resolver disputas — nesses casos, avisamos quais dados ficaram retidos e por quanto tempo no e-mail de confirmação.</p>
+
+  <a href="mailto:contato@safrabook.com.br?subject=Exclus%C3%A3o%20de%20conta" class="btn-email">✉️ Pedir exclusão por e-mail</a>
+
+  <p class="section-title">Mais informações</p>
+  <p>Veja também nossa <a href="/privacidade.html">Política de Privacidade</a> completa.</p>
+
+</div>
+
+<footer>
+  <strong>SafraBook</strong> — O agro brasileiro no mapa<br>
+  <a href="/">safrabook.com.br</a> ·
+  <a href="/termos.html">Termos de Uso</a> ·
+  <a href="/privacidade.html">Política de Privacidade</a>
+</footer>
+
+</body>
+</html>
