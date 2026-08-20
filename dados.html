@@ -115,15 +115,22 @@
     .temoji { font-size: 1.15rem; }
     .tref { font-size: 0.72rem; color: var(--gray); }
     .tlinha-clicavel { cursor: pointer; }
-    .tchevron { font-size: 0.7rem; color: var(--gray); width: 10px; }
+    .tchevron {
+      font-size: 0.65rem; color: var(--white); width: 18px; height: 18px;
+      background: var(--green); border-radius: 50%;
+      display: inline-flex; align-items: center; justify-content: center;
+      flex-shrink: 0; transition: transform 0.15s;
+    }
+    .tchevron.aberto { transform: rotate(180deg); }
     .tlinha-regional {
       display: flex; align-items: center; padding: 0.55rem 1.25rem 0.55rem 2.5rem;
       background: rgba(0,107,60,0.04); border-bottom: 1px solid #F0EEE8; font-size: 0.82rem;
     }
 
     /* ── SAFRA: SELETOR + TABELA ── */
-    .produto-select {
-      display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1.5rem;
+    .produto-select { margin-bottom: 1.5rem; }
+    .produto-rapidos {
+      display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 0.65rem;
     }
     .produto-btn {
       background: var(--white); border: 1.5px solid rgba(0,0,0,0.1);
@@ -133,6 +140,19 @@
     }
     .produto-btn:hover { border-color: var(--green); }
     .produto-btn.ativo { background: var(--green); border-color: var(--green); color: var(--white); }
+    .produto-dropdown-wrap { position: relative; max-width: 320px; }
+    .produto-dropdown {
+      width: 100%; appearance: none; -webkit-appearance: none;
+      background: var(--white); border: 1.5px solid rgba(0,0,0,0.1);
+      padding: 0.65rem 2.25rem 0.65rem 1.1rem; border-radius: 100px;
+      font-size: 0.85rem; font-weight: 600; font-family: inherit; color: var(--dark);
+      cursor: pointer;
+    }
+    .produto-dropdown:focus { outline: none; border-color: var(--green); }
+    .produto-dropdown-wrap::after {
+      content: '▾'; position: absolute; right: 1.1rem; top: 50%; transform: translateY(-50%);
+      color: var(--green); font-size: 0.8rem; pointer-events: none;
+    }
 
     .safra-badge {
       display: inline-block; background: rgba(0,107,60,0.08); color: var(--green);
@@ -141,7 +161,13 @@
     }
     .safra-badge-var { font-weight: 500; margin-left: 0.2rem; }
 
-    .uf-tabela { background: var(--white); border-radius: 14px; overflow: hidden; border: 1px solid rgba(0,0,0,0.06); margin-bottom: 2rem; }
+    .uf-tabela { background: var(--white); border-radius: 14px; overflow: hidden; border: 1px solid rgba(0,0,0,0.06); margin-bottom: 0.75rem; }
+    .ver-mais-btn {
+      display: block; margin: 0 auto 2rem; background: none; border: 1.5px solid rgba(0,0,0,0.1);
+      padding: 0.5rem 1.25rem; border-radius: 100px; font-size: 0.82rem; font-weight: 700;
+      color: var(--green); cursor: pointer; font-family: inherit; transition: border-color 0.15s;
+    }
+    .ver-mais-btn:hover { border-color: var(--green); }
     .uf-linha { display: flex; align-items: center; padding: 0.6rem 1.25rem; border-bottom: 1px solid #F0EEE8; font-size: 0.88rem; }
     .uf-linha:last-child { border-bottom: none; }
     .uf-linha.head { background: #FAF9F6; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; color: var(--gray); }
@@ -266,8 +292,11 @@
   <p class="section-label">CONAB · série histórica oficial</p>
   <h2>Produção por estado</h2>
   <p class="section-desc">Escolha uma cultura pra ver como cada estado contribui na safra mais recente, e a tendência de produção nacional ao longo dos anos.</p>
-  <div class="produto-select" id="produtoSelect">
-    <div class="loading-msg">Carregando culturas...</div>
+  <div class="produto-select">
+    <div class="produto-rapidos" id="produtoRapidos"></div>
+    <div class="produto-dropdown-wrap">
+      <select class="produto-dropdown" id="produtoDropdown"></select>
+    </div>
   </div>
   <div id="safraConteudo"></div>
 </section>
@@ -403,7 +432,7 @@ async function carregarCepea() {
       return `
         <div class="tlinha ${temRegional ? 'tlinha-clicavel' : ''}" ${temRegional ? `onclick="toggleRegional(this, '${c.produto}')"` : ''}>
           <div class="tcol-nome">
-            ${temRegional ? '<span class="tchevron">▸</span>' : ''}
+            ${temRegional ? '<span class="tchevron">▾</span>' : ''}
             <span class="temoji">${c.emoji}</span><div><div>${c.nome}</div><div class="tref">${c.referencia}</div></div>
           </div>
           <div class="tcol-preco">R$ ${fmt(c.preco)}<div class="tref">${c.unidade_label}</div></div>
@@ -424,7 +453,7 @@ function toggleRegional(linhaEl, produto) {
   if (aberto) {
     host.innerHTML = '';
     host.dataset.aberto = '0';
-    if (chevron) chevron.textContent = '▸';
+    if (chevron) chevron.classList.remove('aberto');
     return;
   }
   const prefixo = PREFIXO_REGIONAL[produto];
@@ -437,7 +466,7 @@ function toggleRegional(linhaEl, produto) {
     </div>
   `).join('');
   host.dataset.aberto = '1';
-  if (chevron) chevron.textContent = '▾';
+  if (chevron) chevron.classList.add('aberto');
 }
 
 /* ── SAFRA POR ESTADO ── */
@@ -455,6 +484,16 @@ const NOME_PRODUTO = {
 
 let safrasCache = {}; // produto -> linhas
 let produtoAtivo = null;
+
+// culturas mais buscadas viram atalho de um toque; o resto (26 outras) fica
+// no dropdown pra não virar uma parede de botão quebrando linha sem fim.
+const PRODUTOS_RAPIDOS = ['soja', 'milho', 'cafe', 'algodao', 'arroz', 'trigo'];
+
+// Nem toda cultura da CONAB (produção) tem indicador de preço na CEPEA —
+// só essas casam. cotacoes_historico começou a ser gravado em 20/08 (CEPEA
+// não tem série histórica gratuita pra trazer retroativo, só dá pra ir
+// acumulando um snapshot por dia a partir de agora).
+const CEPEA_MATCH = { soja: 'soja', milho: 'milho', cafe: 'cafe', cafe_arabica: 'cafe', algodao: 'algodao', trigo: 'trigo' };
 
 // O Supabase devolve no máximo 1000 linhas por request (max-rows do projeto) —
 // alguns produtos (milho, feijão, arroz...) passam disso, então precisa paginar
@@ -480,7 +519,8 @@ async function buscarTudoPaginado(url) {
 }
 
 async function carregarProdutosDisponiveis() {
-  const sel = document.getElementById('produtoSelect');
+  const rapidos = document.getElementById('produtoRapidos');
+  const dropdown = document.getElementById('produtoDropdown');
   // A lista de produtos é a mesma que o pipeline processa (NOME_PRODUTO) — não
   // precisa perguntar pro banco quais existem. Evita 2 problemas: PostgREST não
   // suporta "group by" via query string simples (dava erro PGRST100), e buscar
@@ -488,16 +528,24 @@ async function carregarProdutosDisponiveis() {
   // de linhas por request do Supabase antes de listar tudo.
   const produtos = Object.keys(NOME_PRODUTO)
     .sort((a, b) => NOME_PRODUTO[a].localeCompare(NOME_PRODUTO[b]));
-  sel.innerHTML = produtos.map(p => `<button class="produto-btn" data-produto="${p}">${NOME_PRODUTO[p]}</button>`).join('');
-  sel.querySelectorAll('.produto-btn').forEach(btn => {
+
+  rapidos.innerHTML = PRODUTOS_RAPIDOS.map(p => `<button class="produto-btn" data-produto="${p}">${NOME_PRODUTO[p]}</button>`).join('');
+  rapidos.querySelectorAll('.produto-btn').forEach(btn => {
     btn.addEventListener('click', () => selecionarProduto(btn.dataset.produto));
   });
+
+  dropdown.innerHTML = `<option value="" disabled>Outras culturas...</option>` +
+    produtos.map(p => `<option value="${p}">${NOME_PRODUTO[p]}</option>`).join('');
+  dropdown.addEventListener('change', () => selecionarProduto(dropdown.value));
+
   selecionarProduto('soja');
 }
 
 async function selecionarProduto(produto) {
   produtoAtivo = produto;
   document.querySelectorAll('.produto-btn').forEach(b => b.classList.toggle('ativo', b.dataset.produto === produto));
+  const dropdown = document.getElementById('produtoDropdown');
+  dropdown.value = PRODUTOS_RAPIDOS.includes(produto) ? '' : produto;
   const conteudo = document.getElementById('safraConteudo');
   conteudo.innerHTML = '<div class="loading-msg">Carregando...</div>';
 
@@ -531,6 +579,22 @@ async function selecionarProduto(produto) {
     ? ((porAno[safraMaisRecente] - porAno[safraAnterior]) / porAno[safraAnterior]) * 100
     : null;
 
+  const QTD_VISIVEL = 8;
+  function linhaUf(l) {
+    const anteriorValor = producaoAnteriorPorUf[l.uf];
+    const variacaoUf = anteriorValor ? ((l.producao_mil_ton - anteriorValor) / anteriorValor) * 100 : null;
+    return `
+      <div class="uf-linha">
+        <div class="uf-col-uf">${l.uf}</div>
+        <div class="uf-col-barra"><div class="barra-bg"><div class="barra-fill" style="width:${(l.producao_mil_ton / maxProducao * 100).toFixed(1)}%"></div></div></div>
+        <div class="uf-col-num">${fmt(l.producao_mil_ton, 0)}</div>
+        <div class="uf-col-var">${variacaoUf !== null ? variacaoHtml(variacaoUf) : '<span class="var-flat">—</span>'}</div>
+      </div>
+    `;
+  }
+  const estadosVisiveis = porEstado.slice(0, QTD_VISIVEL);
+  const estadosOcultos = porEstado.slice(QTD_VISIVEL);
+
   conteudo.innerHTML = `
     <div class="safra-badge">
       Safra ${safraMaisRecente}
@@ -543,31 +607,66 @@ async function selecionarProduto(produto) {
         <div class="uf-col-num">Mil ton</div>
         <div class="uf-col-var">vs ${safraAnterior || '—'}</div>
       </div>
-      ${porEstado.map(l => {
-        const anteriorValor = producaoAnteriorPorUf[l.uf];
-        const variacaoUf = anteriorValor ? ((l.producao_mil_ton - anteriorValor) / anteriorValor) * 100 : null;
-        return `
-        <div class="uf-linha">
-          <div class="uf-col-uf">${l.uf}</div>
-          <div class="uf-col-barra"><div class="barra-bg"><div class="barra-fill" style="width:${(l.producao_mil_ton / maxProducao * 100).toFixed(1)}%"></div></div></div>
-          <div class="uf-col-num">${fmt(l.producao_mil_ton, 0)}</div>
-          <div class="uf-col-var">${variacaoUf !== null ? variacaoHtml(variacaoUf) : '<span class="var-flat">—</span>'}</div>
-        </div>
-      `;
-      }).join('')}
+      ${estadosVisiveis.map(linhaUf).join('')}
+      ${estadosOcultos.length > 0 ? `
+        <div id="ufOcultos" style="display:none">${estadosOcultos.map(linhaUf).join('')}</div>
+      ` : ''}
     </div>
+    ${estadosOcultos.length > 0 ? `
+      <button class="ver-mais-btn" id="btnVerMaisUf">Ver mais ${estadosOcultos.length} estados ▾</button>
+    ` : ''}
     <div class="chart-wrap">
       <div class="chart-title">Produção nacional por safra (mil toneladas)</div>
       <div id="chartHost"></div>
     </div>
     <p class="fonte-linha">Fonte: CONAB, série histórica oficial (conab.gov.br)</p>
+    ${CEPEA_MATCH[produto] ? `
+      <div class="chart-wrap" style="margin-top:1rem">
+        <div class="chart-title">Evolução do preço CEPEA (R$)</div>
+        <div id="precoChartHost"><div class="loading-msg" style="padding:1rem">Carregando preço...</div></div>
+      </div>
+    ` : ''}
   `;
 
+  const btnVerMais = document.getElementById('btnVerMaisUf');
+  if (btnVerMais) {
+    btnVerMais.addEventListener('click', () => {
+      const ocultos = document.getElementById('ufOcultos');
+      const aberto = ocultos.style.display !== 'none';
+      ocultos.style.display = aberto ? 'none' : '';
+      btnVerMais.textContent = aberto ? `Ver mais ${estadosOcultos.length} estados ▾` : 'Ver menos ▴';
+    });
+  }
+
   desenharTendencia(anos, anos.map(a => porAno[a]));
+  if (CEPEA_MATCH[produto]) carregarEvolucaoPreco(CEPEA_MATCH[produto]);
 }
 
-function desenharTendencia(labels, valores) {
-  const host = document.getElementById('chartHost');
+/* ── EVOLUÇÃO DE PREÇO CEPEA (snapshot diário, começou a acumular 20/08) ── */
+async function carregarEvolucaoPreco(produtoCepea) {
+  const host = document.getElementById('precoChartHost');
+  try {
+    const res = await fetch(
+      `${SUPABASE_URL}/rest/v1/cotacoes_historico?grupo=eq.cepea_nacional&produto=eq.${produtoCepea}&order=data.asc&select=data,preco`,
+      { headers: { apikey: SUPABASE_ANON, Authorization: `Bearer ${SUPABASE_ANON}` } }
+    );
+    const linhas = await res.json();
+    if (!host) return; // usuário já trocou de cultura antes da resposta chegar
+    if (!Array.isArray(linhas) || linhas.length < 2) {
+      host.innerHTML = '<div class="loading-msg" style="padding:1rem">Começamos a acompanhar o preço dessa cultura agora — volte em alguns dias pra ver a evolução aqui.</div>';
+      return;
+    }
+    const labels = linhas.map(l => l.data.split('-').reverse().slice(0, 2).join('/'));
+    desenharTendencia(labels, linhas.map(l => l.preco), host, v => `R$ ${fmt(v)}`, true);
+  } catch (e) {
+    host.innerHTML = '<div class="erro-msg">Não foi possível carregar a evolução de preço agora.</div>';
+  }
+}
+
+function desenharTendencia(labels, valores, host, formatarValor, labelCompleto) {
+  host = host || document.getElementById('chartHost');
+  formatarValor = formatarValor || (v => `${fmt(v, 0)} mil ton`);
+  const tooltipId = 'chartTooltip' + Math.random().toString(36).slice(2, 8);
   const W = 760, H = 220, padL = 8, padR = 8, padT = 10, padB = 24;
   const min = Math.min(...valores), max = Math.max(...valores);
   const range = (max - min) || 1;
@@ -590,21 +689,21 @@ function desenharTendencia(labels, valores) {
       <path class="trend-line" d="${linePath}" />
       ${pontos.map((p, i) => `<circle class="trend-dot" cx="${p[0]}" cy="${p[1]}" r="3" data-i="${i}" style="cursor:pointer"/>`).join('')}
       <circle class="trend-dot-end" cx="${pontos.at(-1)[0]}" cy="${pontos.at(-1)[1]}" r="4"/>
-      ${labels.map((l, i) => i % passo === 0 ? `<text class="trend-axis-label" x="${x(i)}" y="${H - 6}" text-anchor="middle">${l.split('/')[0]}</text>` : '').join('')}
+      ${labels.map((l, i) => i % passo === 0 ? `<text class="trend-axis-label" x="${x(i)}" y="${H - 6}" text-anchor="middle">${labelCompleto ? l : l.split('/')[0]}</text>` : '').join('')}
     </svg>
-    <div class="tooltip" id="chartTooltip"></div>
+    <div class="tooltip" id="${tooltipId}"></div>
   `;
   host.innerHTML = svg;
   host.style.position = 'relative';
 
-  const tooltip = document.getElementById('chartTooltip');
+  const tooltip = host.querySelector('.tooltip');
   host.querySelectorAll('.trend-dot').forEach((dot, i) => {
     dot.addEventListener('mouseenter', () => {
       const cx = parseFloat(dot.getAttribute('cx')), cy = parseFloat(dot.getAttribute('cy'));
       const pctX = (cx / W) * 100, pctY = (cy / H) * 100;
       tooltip.style.left = pctX + '%';
       tooltip.style.top = pctY + '%';
-      tooltip.textContent = `${labels[i]}: ${fmt(valores[i], 0)} mil ton`;
+      tooltip.textContent = `${labels[i]}: ${formatarValor(valores[i])}`;
       tooltip.style.opacity = '1';
     });
     dot.addEventListener('mouseleave', () => { tooltip.style.opacity = '0'; });
