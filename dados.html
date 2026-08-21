@@ -190,6 +190,18 @@
     .trend-dot-end { fill: var(--green); }
     .trend-grid { stroke: #ECEAE3; stroke-width: 1; }
     .trend-axis-label { font-size: 10px; fill: var(--gray); font-family: 'Inter', sans-serif; }
+
+    /* ── GRÁFICO COMBINADO (produção x preço) ── */
+    .combo-barra { fill: var(--green); opacity: 0.85; }
+    .combo-trend { fill: none; stroke: var(--blue); stroke-width: 2; stroke-linecap: round; stroke-dasharray: 5,4; }
+    .combo-preco-linha { fill: none; stroke: var(--yellow2); stroke-width: 2.5; stroke-linecap: round; }
+    .combo-preco-dot { fill: var(--yellow2); stroke: var(--white); stroke-width: 1.5; }
+    .chart-legenda { display: flex; flex-wrap: wrap; gap: 0.9rem; margin-top: 0.75rem; font-size: 0.75rem; color: var(--gray); }
+    .leg-dot { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 0.35rem; vertical-align: -1px; }
+    .leg-barra { background: var(--green); opacity: 0.85; }
+    .leg-trend { background: var(--blue); }
+    .leg-preco { background: var(--yellow2); }
+    .chart-sub { font-size: 0.72rem; color: var(--gray); margin: 0.15rem 0 0.9rem; line-height: 1.5; }
     .tooltip {
       position: absolute; pointer-events: none; background: var(--dark); color: var(--white);
       font-size: 0.75rem; padding: 0.4rem 0.65rem; border-radius: 6px; opacity: 0;
@@ -579,6 +591,23 @@ async function selecionarProduto(produto) {
     ? ((porAno[safraMaisRecente] - porAno[safraAnterior]) / porAno[safraAnterior]) * 100
     : null;
 
+  const produtoPreco = CEPEA_MATCH[produto];
+  let precoPorSafra = {};
+  if (produtoPreco) {
+    if (!precoCache[produtoPreco]) {
+      precoCache[produtoPreco] = await buscarTudoPaginado(
+        `${SUPABASE_URL}/rest/v1/cotacoes_historico?grupo=eq.cepea_nacional&produto=eq.${produtoPreco}&order=data.asc&select=data,preco`
+      );
+    }
+    precoPorSafra = agregarPrecoPorSafra(precoCache[produtoPreco] || []);
+  }
+  // Uma categoria por eixo X = união dos anos com produção + anos com preço.
+  // Hoje isso normalmente NÃO se sobrepõe: CONAB só publica safra fechada,
+  // CEPEA começou a registrar preço em 20/08/2026 — o preço aparece isolado
+  // até a série de anos crescer (ver agregarPrecoPorSafra).
+  const categorias = Array.from(new Set([...anos, ...Object.keys(precoPorSafra)])).sort();
+  const temPreco = Object.keys(precoPorSafra).length > 0;
+
   const QTD_VISIVEL = 8;
   function linhaUf(l) {
     const anteriorValor = producaoAnteriorPorUf[l.uf];
@@ -616,16 +645,14 @@ async function selecionarProduto(produto) {
       <button class="ver-mais-btn" id="btnVerMaisUf">Ver mais ${estadosOcultos.length} estados ▾</button>
     ` : ''}
     <div class="chart-wrap">
-      <div class="chart-title">Produção nacional por safra (mil toneladas)</div>
-      <div id="chartHost"></div>
-    </div>
-    <p class="fonte-linha">Fonte: CONAB, série histórica oficial (conab.gov.br)</p>
-    ${CEPEA_MATCH[produto] ? `
-      <div class="chart-wrap" style="margin-top:1rem">
-        <div class="chart-title">Evolução do preço CEPEA (R$)</div>
-        <div id="precoChartHost"><div class="loading-msg" style="padding:1rem">Carregando preço...</div></div>
+      <div class="chart-title">Produção × preço por safra</div>
+      <div class="chart-sub">
+        CONAB (produção, barra, série completa) + CEPEA (preço médio, linha)${temPreco ? '' : ' — preço ainda sem dado nessa cultura'}.
+        Preço começou a ser registrado em 20/08/2026, cresce um dia por vez — pode aparecer isolado até acumular mais safras.
       </div>
-    ` : ''}
+      <div id="chartCombo"></div>
+    </div>
+    <p class="fonte-linha">Fontes: CONAB, série histórica oficial (conab.gov.br) · CEPEA/ESALQ-USP</p>
   `;
 
   const btnVerMais = document.getElementById('btnVerMaisUf');
@@ -638,75 +665,121 @@ async function selecionarProduto(produto) {
     });
   }
 
-  desenharTendencia(anos, anos.map(a => porAno[a]));
-  if (CEPEA_MATCH[produto]) carregarEvolucaoPreco(CEPEA_MATCH[produto]);
+  desenharComboChart('chartCombo', categorias, porAno, precoPorSafra);
 }
 
-/* ── EVOLUÇÃO DE PREÇO CEPEA (snapshot diário, começou a acumular 20/08) ── */
-async function carregarEvolucaoPreco(produtoCepea) {
-  const host = document.getElementById('precoChartHost');
-  try {
-    const res = await fetch(
-      `${SUPABASE_URL}/rest/v1/cotacoes_historico?grupo=eq.cepea_nacional&produto=eq.${produtoCepea}&order=data.asc&select=data,preco`,
-      { headers: { apikey: SUPABASE_ANON, Authorization: `Bearer ${SUPABASE_ANON}` } }
-    );
-    const linhas = await res.json();
-    if (!host) return; // usuário já trocou de cultura antes da resposta chegar
-    if (!Array.isArray(linhas) || linhas.length < 2) {
-      host.innerHTML = '<div class="loading-msg" style="padding:1rem">Começamos a acompanhar o preço dessa cultura agora — volte em alguns dias pra ver a evolução aqui.</div>';
-      return;
-    }
-    const labels = linhas.map(l => l.data.split('-').reverse().slice(0, 2).join('/'));
-    desenharTendencia(labels, linhas.map(l => l.preco), host, v => `R$ ${fmt(v)}`, true);
-  } catch (e) {
-    host.innerHTML = '<div class="erro-msg">Não foi possível carregar a evolução de preço agora.</div>';
-  }
+let precoCache = {}; // produto cepea -> linhas
+
+// Aproximação pra alinhar preço diário (CEPEA) com safra anual (CONAB)
+// enquanto o histórico de preço ainda é curto: o preço de um ano civil Y é
+// atribuído à safra "(Y-1)/YY" — convenção usual pras principais culturas
+// de grão, cuja comercialização do ano corrente acontece durante o ano
+// civil seguinte ao plantio (ex: preço de agosto/2026 → safra "2025/26").
+// É uma aproximação (cada cultura tem calendário próprio), suficiente pra
+// alinhar visualmente até o preço acumular anos suficientes pra virar uma
+// média por safra de verdade, cultura por cultura.
+function agregarPrecoPorSafra(linhasPreco) {
+  const porSafra = {};
+  linhasPreco.forEach(l => {
+    const ano = parseInt(l.data.split('-')[0], 10);
+    const safra = `${ano - 1}/${String(ano).slice(2)}`;
+    (porSafra[safra] ??= []).push(l.preco);
+  });
+  const medias = {};
+  Object.entries(porSafra).forEach(([safra, valores]) => {
+    medias[safra] = valores.reduce((a, b) => a + b, 0) / valores.length;
+  });
+  return medias;
 }
 
-function desenharTendencia(labels, valores, host, formatarValor, labelCompleto) {
-  host = host || document.getElementById('chartHost');
-  formatarValor = formatarValor || (v => `${fmt(v, 0)} mil ton`);
-  const tooltipId = 'chartTooltip' + Math.random().toString(36).slice(2, 8);
-  const W = 760, H = 220, padL = 8, padR = 8, padT = 10, padB = 24;
-  const min = Math.min(...valores), max = Math.max(...valores);
-  const range = (max - min) || 1;
-  const x = i => padL + (i / (valores.length - 1)) * (W - padL - padR);
-  const y = v => padT + (1 - (v - min) / range) * (H - padT - padB);
+// Gráfico único: produção em barra (eixo esquerdo, mil ton) + preço médio
+// em linha (eixo direito, R$) + uma média móvel da produção como linha de
+// tendência entre as duas camadas. Dois eixos Y só é honesto quando bem
+// identificado (cores/legenda distintas, nunca escondido) — é o padrão
+// normal de relatório agro pra cruzar produção com preço.
+function desenharComboChart(hostId, categorias, producaoMap, precoMap) {
+  const host = document.getElementById(hostId);
+  const W = 760, H = 260, padL = 8, padR = 8, padT = 16, padB = 26;
+  const n = categorias.length;
+  if (n === 0) { host.innerHTML = '<div class="erro-msg">Sem dados pra mostrar ainda.</div>'; return; }
 
-  const pontos = valores.map((v, i) => [x(i), y(v)]);
-  const linePath = pontos.map((p, i) => (i === 0 ? 'M' : 'L') + p[0].toFixed(1) + ',' + p[1].toFixed(1)).join(' ');
-  const areaPath = linePath + ` L${x(valores.length - 1).toFixed(1)},${H - padB} L${x(0).toFixed(1)},${H - padB} Z`;
+  const producaoVals = categorias.map(c => producaoMap[c] ?? null);
+  const precoVals = categorias.map(c => precoMap[c] ?? null);
+  const producaoNums = producaoVals.filter(v => v != null);
+  const precoNums = precoVals.filter(v => v != null);
+  const maxProd = Math.max(...producaoNums, 1) * 1.08;
+  const maxPreco = Math.max(...precoNums, 1) * 1.15;
+  const minPreco = Math.min(...precoNums, 0) * 0.9;
 
-  // mostra só alguns rótulos no eixo X pra não colidir
-  const passo = Math.ceil(labels.length / 8);
+  const bandW = (W - padL - padR) / n;
+  const xCenter = i => padL + bandW * (i + 0.5);
+  const yProd = v => padT + (1 - v / maxProd) * (H - padT - padB);
+  const yPreco = v => padT + (1 - (v - minPreco) / ((maxPreco - minPreco) || 1)) * (H - padT - padB);
+
+  const barras = categorias.map((c, i) => {
+    if (producaoVals[i] == null) return '';
+    const bw = bandW * 0.46;
+    const by = yProd(producaoVals[i]);
+    return `<rect class="combo-barra" x="${(xCenter(i) - bw / 2).toFixed(1)}" y="${by.toFixed(1)}" width="${bw.toFixed(1)}" height="${(H - padB - by).toFixed(1)}" data-i="${i}" data-tipo="producao" style="cursor:pointer"/>`;
+  }).join('');
+
+  // Tendência = média móvel (janela 3) só sobre os pontos que têm produção.
+  const idxProd = categorias.map((c, i) => i).filter(i => producaoVals[i] != null);
+  const trendPontos = idxProd.map((idx, pos) => {
+    const janela = idxProd.slice(Math.max(0, pos - 1), pos + 2).map(j => producaoVals[j]);
+    const media = janela.reduce((a, b) => a + b, 0) / janela.length;
+    return [xCenter(idx), yProd(media)];
+  });
+  const trendPath = trendPontos.length > 1
+    ? trendPontos.map((p, i) => (i === 0 ? 'M' : 'L') + p[0].toFixed(1) + ',' + p[1].toFixed(1)).join(' ')
+    : '';
+
+  const idxPreco = categorias.map((c, i) => i).filter(i => precoVals[i] != null);
+  const precoPontos = idxPreco.map(i => [xCenter(i), yPreco(precoVals[i])]);
+  const precoPath = precoPontos.length > 1
+    ? precoPontos.map((p, i) => (i === 0 ? 'M' : 'L') + p[0].toFixed(1) + ',' + p[1].toFixed(1)).join(' ')
+    : '';
+
+  const tooltipId = hostId + 'Tooltip';
 
   const svg = `
     <svg class="trend" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none">
-      <line class="trend-grid" x1="${padL}" y1="${padT}" x2="${W - padR}" y2="${padT}" />
-      <line class="trend-grid" x1="${padL}" y1="${(padT + H - padB) / 2}" x2="${W - padR}" y2="${(padT + H - padB) / 2}" />
       <line class="trend-grid" x1="${padL}" y1="${H - padB}" x2="${W - padR}" y2="${H - padB}" />
-      <path class="trend-area" d="${areaPath}" />
-      <path class="trend-line" d="${linePath}" />
-      ${pontos.map((p, i) => `<circle class="trend-dot" cx="${p[0]}" cy="${p[1]}" r="3" data-i="${i}" style="cursor:pointer"/>`).join('')}
-      <circle class="trend-dot-end" cx="${pontos.at(-1)[0]}" cy="${pontos.at(-1)[1]}" r="4"/>
-      ${labels.map((l, i) => i % passo === 0 ? `<text class="trend-axis-label" x="${x(i)}" y="${H - 6}" text-anchor="middle">${labelCompleto ? l : l.split('/')[0]}</text>` : '').join('')}
+      ${barras}
+      ${trendPath ? `<path class="combo-trend" d="${trendPath}" />` : ''}
+      ${precoPath ? `<path class="combo-preco-linha" d="${precoPath}" />` : ''}
+      ${precoPontos.map((p, k) => `<circle class="combo-preco-dot" cx="${p[0]}" cy="${p[1]}" r="${precoPontos.length === 1 ? 5 : 3.5}" data-i="${idxPreco[k]}" data-tipo="preco" style="cursor:pointer"/>`).join('')}
+      ${categorias.map((c, i) => `<text class="trend-axis-label" x="${xCenter(i)}" y="${H - 8}" text-anchor="middle">${c}</text>`).join('')}
     </svg>
+    <div class="chart-legenda">
+      <span><i class="leg-dot leg-barra"></i>Produção (mil ton, eixo esquerdo)</span>
+      ${trendPath ? '<span><i class="leg-dot leg-trend"></i>Tendência (média móvel)</span>' : ''}
+      ${precoPontos.length ? '<span><i class="leg-dot leg-preco"></i>Preço médio CEPEA (R$, eixo direito)</span>' : ''}
+    </div>
     <div class="tooltip" id="${tooltipId}"></div>
   `;
   host.innerHTML = svg;
   host.style.position = 'relative';
 
-  const tooltip = host.querySelector('.tooltip');
-  host.querySelectorAll('.trend-dot').forEach((dot, i) => {
-    dot.addEventListener('mouseenter', () => {
-      const cx = parseFloat(dot.getAttribute('cx')), cy = parseFloat(dot.getAttribute('cy'));
-      const pctX = (cx / W) * 100, pctY = (cy / H) * 100;
-      tooltip.style.left = pctX + '%';
-      tooltip.style.top = pctY + '%';
-      tooltip.textContent = `${labels[i]}: ${formatarValor(valores[i])}`;
-      tooltip.style.opacity = '1';
+  const tooltipEl = document.getElementById(tooltipId);
+  host.querySelectorAll('[data-tipo]').forEach(el => {
+    el.addEventListener('mouseenter', () => {
+      const i = parseInt(el.dataset.i, 10);
+      const tipo = el.dataset.tipo;
+      let cx, cy, texto;
+      if (tipo === 'producao') {
+        cx = xCenter(i); cy = yProd(producaoVals[i]);
+        texto = `${categorias[i]}: ${fmt(producaoVals[i], 0)} mil ton`;
+      } else {
+        cx = xCenter(i); cy = yPreco(precoVals[i]);
+        texto = `${categorias[i]}: R$ ${fmt(precoVals[i])} (médio)`;
+      }
+      tooltipEl.style.left = (cx / W * 100) + '%';
+      tooltipEl.style.top = (cy / H * 100) + '%';
+      tooltipEl.textContent = texto;
+      tooltipEl.style.opacity = '1';
     });
-    dot.addEventListener('mouseleave', () => { tooltip.style.opacity = '0'; });
+    el.addEventListener('mouseleave', () => { tooltipEl.style.opacity = '0'; });
   });
 }
 
