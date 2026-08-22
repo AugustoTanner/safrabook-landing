@@ -738,12 +738,13 @@ function desenharComboChart(hostId, categorias, producaoMap, precoMap) {
   const precoPontos = idxPreco.map(i => [xCenter(i), yPreco(precoVals[i])]);
   // Com só 1 ponto ainda não dá pra traçar uma linha "de verdade" — em vez
   // de deixar o preço flutuando sozinho como só uma bolinha, desenha um
-  // traço plano até a borda esquerda (mesmo estilo da linha), pra já ler
-  // como uma série de linha (igual a de tendência), só que ainda curta.
+  // traço CURTO (largura de uma barra, não o gráfico inteiro) terminando
+  // na bolinha, só pra ler como início de linha sem sugerir 50 anos de
+  // preço constante.
   const precoPath = precoPontos.length > 1
     ? precoPontos.map((p, i) => (i === 0 ? 'M' : 'L') + p[0].toFixed(1) + ',' + p[1].toFixed(1)).join(' ')
     : precoPontos.length === 1
-      ? `M${padL},${precoPontos[0][1].toFixed(1)} L${precoPontos[0][0].toFixed(1)},${precoPontos[0][1].toFixed(1)}`
+      ? `M${(precoPontos[0][0] - bandW).toFixed(1)},${precoPontos[0][1].toFixed(1)} L${precoPontos[0][0].toFixed(1)},${precoPontos[0][1].toFixed(1)}`
       : '';
 
   const tooltipId = hostId + 'Tooltip';
