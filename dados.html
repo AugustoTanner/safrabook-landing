@@ -191,14 +191,9 @@
     .trend-grid { stroke: #ECEAE3; stroke-width: 1; }
     .trend-axis-label { font-size: 10px; fill: var(--gray); font-family: 'Inter', sans-serif; }
 
-    /* ── GRÁFICO COMBINADO (produção x preço) ── */
-    .combo-barra { fill: var(--green); opacity: 0.85; }
+    /* ── GRÁFICO DE PREÇO (linha por dia dentro da safra) ── */
     .combo-preco-linha { fill: none; stroke: var(--yellow2); stroke-width: 2.5; stroke-linecap: round; }
     .combo-preco-dot { fill: var(--yellow2); stroke: var(--white); stroke-width: 1.5; }
-    .chart-legenda { display: flex; flex-wrap: wrap; gap: 0.9rem; margin-top: 0.75rem; font-size: 0.75rem; color: var(--gray); }
-    .leg-dot { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 0.35rem; vertical-align: -1px; }
-    .leg-barra { background: var(--green); opacity: 0.85; }
-    .leg-preco { background: var(--yellow2); }
     .chart-sub { font-size: 0.72rem; color: var(--gray); margin: 0.15rem 0 0.9rem; line-height: 1.5; }
     .tooltip {
       position: absolute; pointer-events: none; background: var(--dark); color: var(--white);
@@ -582,8 +577,20 @@ async function selecionarProduto(produto) {
   }
 
   const porAno = {};
-  linhas.forEach(l => { porAno[l.safra] = (porAno[l.safra] || 0) + (l.producao_mil_ton || 0); });
+  const areaPorAno = {};
+  linhas.forEach(l => {
+    porAno[l.safra] = (porAno[l.safra] || 0) + (l.producao_mil_ton || 0);
+    areaPorAno[l.safra] = (areaPorAno[l.safra] || 0) + (l.area_plantada_mil_ha || 0);
+  });
   const anos = Object.keys(porAno).sort();
+  // Produtividade nacional = produção total / área plantada total (não a
+  // média simples dos kg/ha por UF — isso pesaria igual um estado pequeno e
+  // um grande; dividindo os totais, cada hectare conta igual de verdade).
+  // mil_ton*1000 / mil_ha = kg/ha.
+  const produtividadePorAno = {};
+  anos.forEach(a => {
+    produtividadePorAno[a] = areaPorAno[a] > 0 ? (porAno[a] * 1000) / areaPorAno[a] : null;
+  });
 
   const variacaoNacional = safraAnterior && porAno[safraAnterior]
     ? ((porAno[safraMaisRecente] - porAno[safraAnterior]) / porAno[safraAnterior]) * 100
@@ -599,12 +606,8 @@ async function selecionarProduto(produto) {
     }
     precoPorSafra = agruparPrecoPorSafra(precoCache[produtoPreco] || []);
   }
-  // Uma categoria por eixo X = união dos anos com produção + anos com preço.
-  // Hoje isso normalmente NÃO se sobrepõe: CONAB só publica safra fechada,
-  // CEPEA começou a registrar preço em 20/08/2026 — o preço aparece isolado
-  // até a série de anos crescer (ver agruparPrecoPorSafra).
-  const categorias = Array.from(new Set([...anos, ...Object.keys(precoPorSafra)])).sort();
-  const temPreco = Object.keys(precoPorSafra).length > 0;
+  const categoriasPreco = Object.keys(precoPorSafra).sort();
+  const temPreco = categoriasPreco.length > 0;
 
   const QTD_VISIVEL = 8;
   function linhaUf(l) {
@@ -643,12 +646,16 @@ async function selecionarProduto(produto) {
       <button class="ver-mais-btn" id="btnVerMaisUf">Ver mais ${estadosOcultos.length} estados ▾</button>
     ` : ''}
     <div class="chart-wrap">
-      <div class="chart-title">Produção × preço por safra</div>
+      <div class="chart-title">Produtividade nacional por safra (kg/ha)</div>
+      <div class="chart-sub">CONAB · produção total ÷ área plantada total, série histórica completa</div>
+      <div id="chartProdutividade"></div>
+    </div>
+    <div class="chart-wrap" style="margin-top:1rem">
+      <div class="chart-title">Evolução do preço CEPEA (R$)</div>
       <div class="chart-sub">
-        CONAB (produção, barra, série completa) + CEPEA (preço diário, linha)${temPreco ? '' : ' — preço ainda sem dado nessa cultura'}.
-        Preço começou a ser registrado em 20/08/2026 — os dias já registrados aparecem como uma linha dentro da safra atual.
+        ${temPreco ? 'Preço diário' : 'Ainda sem preço pra essa cultura'} — começou a ser registrado em 20/08/2026, cresce um dia por vez.
       </div>
-      <div id="chartCombo"></div>
+      <div id="chartPreco"></div>
     </div>
     <p class="fonte-linha">Fontes: CONAB, série histórica oficial (conab.gov.br) · CEPEA/ESALQ-USP</p>
   `;
@@ -663,7 +670,9 @@ async function selecionarProduto(produto) {
     });
   }
 
-  desenharComboChart('chartCombo', categorias, porAno, precoPorSafra);
+  desenharLinhaSimples('chartProdutividade', anos, anos.map(a => produtividadePorAno[a]), v => `${fmt(v, 0)} kg/ha`);
+  if (temPreco) desenharPrecoChart('chartPreco', categoriasPreco, precoPorSafra);
+  else document.getElementById('chartPreco').innerHTML = '<div class="erro-msg">Sem dado de preço pra essa cultura ainda.</div>';
 }
 
 let precoCache = {}; // produto cepea -> linhas
@@ -693,37 +702,80 @@ function agruparPrecoPorSafra(linhasPreco) {
   return porSafra;
 }
 
-// Gráfico único, só o essencial (pedido do Guto 22/08: "só preços e
-// produção mesmo"): produção em barra (eixo esquerdo, mil ton) + preço em
-// linha (eixo direito, R$), sem linha de referência nem tendência extra.
-// Cada safra com preço vira uma "faixa" no eixo X — dentro dela, todo dia
-// real vira um ponto da linha, espalhado da esquerda pra direita em ordem
-// cronológica, então a evolução dia a dia aparece mesmo quando cai tudo
-// dentro da mesma safra. Dois eixos Y só é honesto quando bem identificado
-// (cores/legenda distintas, nunca escondido) — padrão normal de relatório
-// agro pra cruzar produção com preço.
-function desenharComboChart(hostId, categorias, producaoMap, precoGroupedMap) {
+// Dois gráficos separados (pedido do Guto 22/08: "faz 2 gráficos, vai um
+// de produtividade e outro de preços") — produtividade é série longa
+// (CONAB, todos os anos), preço é série curta e ainda crescendo (CEPEA, só
+// a partir de 20/08/2026); forçar os dois no mesmo eixo X juntava décadas
+// de barra vazia com um pontinho isolado no canto. Separados, cada um usa
+// só a janela de tempo que realmente tem.
+
+// Linha simples de uma série só (produtividade nacional por safra).
+function desenharLinhaSimples(hostId, labels, valores, formatarValor) {
   const host = document.getElementById(hostId);
-  const W = 760, H = 260, padL = 8, padR = 8, padT = 16, padB = 26;
+  if (!labels.length) { host.innerHTML = '<div class="erro-msg">Sem dados pra mostrar ainda.</div>'; return; }
+  const W = 760, H = 220, padL = 8, padR = 8, padT = 10, padB = 24;
+  const validos = valores.filter(v => v != null);
+  const min = Math.min(...validos), max = Math.max(...validos);
+  const range = (max - min) || 1;
+  const x = i => padL + (i / (valores.length - 1 || 1)) * (W - padL - padR);
+  const y = v => padT + (1 - (v - min) / range) * (H - padT - padB);
+
+  const pontos = valores.map((v, i) => v != null ? [x(i), y(v)] : null);
+  const pontosValidos = pontos.filter(Boolean);
+  const linePath = pontosValidos.map((p, i) => (i === 0 ? 'M' : 'L') + p[0].toFixed(1) + ',' + p[1].toFixed(1)).join(' ');
+  const areaPath = pontosValidos.length > 1
+    ? linePath + ` L${pontosValidos.at(-1)[0].toFixed(1)},${H - padB} L${pontosValidos[0][0].toFixed(1)},${H - padB} Z`
+    : '';
+
+  const passo = Math.ceil(labels.length / 8);
+  const tooltipId = hostId + 'Tooltip';
+
+  const svg = `
+    <svg class="trend" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none">
+      <line class="trend-grid" x1="${padL}" y1="${padT}" x2="${W - padR}" y2="${padT}" />
+      <line class="trend-grid" x1="${padL}" y1="${(padT + H - padB) / 2}" x2="${W - padR}" y2="${(padT + H - padB) / 2}" />
+      <line class="trend-grid" x1="${padL}" y1="${H - padB}" x2="${W - padR}" y2="${H - padB}" />
+      ${areaPath ? `<path class="trend-area" d="${areaPath}" />` : ''}
+      ${linePath ? `<path class="trend-line" d="${linePath}" />` : ''}
+      ${pontos.map((p, i) => p ? `<circle class="trend-dot" cx="${p[0]}" cy="${p[1]}" r="3" data-i="${i}" style="cursor:pointer"/>` : '').join('')}
+      ${labels.map((l, i) => i % passo === 0 ? `<text class="trend-axis-label" x="${x(i)}" y="${H - 6}" text-anchor="middle">${l.split('/')[0]}</text>` : '').join('')}
+    </svg>
+    <div class="tooltip" id="${tooltipId}"></div>
+  `;
+  host.innerHTML = svg;
+  host.style.position = 'relative';
+
+  const tooltipEl = document.getElementById(tooltipId);
+  host.querySelectorAll('.trend-dot').forEach(dot => {
+    dot.addEventListener('mouseenter', () => {
+      const i = parseInt(dot.dataset.i, 10);
+      const cx = parseFloat(dot.getAttribute('cx')), cy = parseFloat(dot.getAttribute('cy'));
+      tooltipEl.style.left = (cx / W * 100) + '%';
+      tooltipEl.style.top = (cy / H * 100) + '%';
+      tooltipEl.textContent = `${labels[i]}: ${formatarValor(valores[i])}`;
+      tooltipEl.style.opacity = '1';
+    });
+    dot.addEventListener('mouseleave', () => { tooltipEl.style.opacity = '0'; });
+  });
+}
+
+// Linha de preço (CEPEA diário) — cada safra com preço vira uma "faixa" no
+// eixo X e, dentro dela, todo dia real vira um ponto espalhado da esquerda
+// pra direita em ordem cronológica, então dá pra ver a evolução dia a dia
+// mesmo quando cai tudo dentro de uma safra só.
+function desenharPrecoChart(hostId, categorias, precoGroupedMap) {
+  const host = document.getElementById(hostId);
   const n = categorias.length;
   if (n === 0) { host.innerHTML = '<div class="erro-msg">Sem dados pra mostrar ainda.</div>'; return; }
 
-  const producaoVals = categorias.map(c => producaoMap[c] ?? null);
-  const producaoNums = producaoVals.filter(v => v != null);
-  const maxProd = Math.max(...producaoNums, 1) * 1.08;
-
+  const W = 760, H = 220, padL = 8, padR = 8, padT = 10, padB = 24;
   const bandW = (W - padL - padR) / n;
   const xCenter = i => padL + bandW * (i + 0.5);
-  const yProd = v => padT + (1 - v / maxProd) * (H - padT - padB);
 
-  // Achata os pontos de preço de todas as categorias numa lista só, já com
-  // a posição X calculada — espalhados dentro de ~70% da largura da banda
-  // da própria safra, em ordem cronológica (1 ponto só fica centralizado).
   const LARGURA_FAIXA = 0.7;
   const precoTodos = [];
   categorias.forEach((c, i) => {
-    const pontos = precoGroupedMap[c];
-    if (!pontos || !pontos.length) return;
+    const pontos = precoGroupedMap[c] || [];
     const largura = bandW * LARGURA_FAIXA;
     pontos.forEach((p, k) => {
       const x = pontos.length > 1
@@ -734,19 +786,12 @@ function desenharComboChart(hostId, categorias, producaoMap, precoGroupedMap) {
   });
 
   const precoNums = precoTodos.map(p => p.valor);
-  const maxPreco = Math.max(...precoNums, 1) * 1.15;
+  const maxPreco = Math.max(...precoNums, 1) * 1.1;
   const minPreco = Math.min(...precoNums, 0) * 0.9;
-  const yPreco = v => padT + (1 - (v - minPreco) / ((maxPreco - minPreco) || 1)) * (H - padT - padB);
-
-  const barras = categorias.map((c, i) => {
-    if (producaoVals[i] == null) return '';
-    const bw = bandW * 0.46;
-    const by = yProd(producaoVals[i]);
-    return `<rect class="combo-barra" x="${(xCenter(i) - bw / 2).toFixed(1)}" y="${by.toFixed(1)}" width="${bw.toFixed(1)}" height="${(H - padB - by).toFixed(1)}" data-i="${i}" data-tipo="producao" style="cursor:pointer"/>`;
-  }).join('');
+  const y = v => padT + (1 - (v - minPreco) / ((maxPreco - minPreco) || 1)) * (H - padT - padB);
 
   const precoPath = precoTodos.length > 1
-    ? precoTodos.map((p, i) => (i === 0 ? 'M' : 'L') + p.x.toFixed(1) + ',' + yPreco(p.valor).toFixed(1)).join(' ')
+    ? precoTodos.map((p, i) => (i === 0 ? 'M' : 'L') + p.x.toFixed(1) + ',' + y(p.valor).toFixed(1)).join(' ')
     : '';
 
   const tooltipId = hostId + 'Tooltip';
@@ -754,41 +799,27 @@ function desenharComboChart(hostId, categorias, producaoMap, precoGroupedMap) {
   const svg = `
     <svg class="trend" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none">
       <line class="trend-grid" x1="${padL}" y1="${H - padB}" x2="${W - padR}" y2="${H - padB}" />
-      ${barras}
       ${precoPath ? `<path class="combo-preco-linha" d="${precoPath}" />` : ''}
-      ${precoTodos.map((p, k) => `<circle class="combo-preco-dot" cx="${p.x.toFixed(1)}" cy="${yPreco(p.valor).toFixed(1)}" r="${precoTodos.length === 1 ? 5 : 3}" data-k="${k}" data-tipo="preco" style="cursor:pointer"/>`).join('')}
-      ${categorias.map((c, i) => `<text class="trend-axis-label" x="${xCenter(i)}" y="${H - 8}" text-anchor="middle">${c}</text>`).join('')}
+      ${precoTodos.map((p, k) => `<circle class="combo-preco-dot" cx="${p.x.toFixed(1)}" cy="${y(p.valor).toFixed(1)}" r="${precoTodos.length === 1 ? 5 : 3}" data-k="${k}" style="cursor:pointer"/>`).join('')}
+      ${categorias.map((c, i) => `<text class="trend-axis-label" x="${xCenter(i)}" y="${H - 6}" text-anchor="middle">${c}</text>`).join('')}
     </svg>
-    <div class="chart-legenda">
-      <span><i class="leg-dot leg-barra"></i>Produção (mil ton, eixo esquerdo)</span>
-      ${precoTodos.length ? '<span><i class="leg-dot leg-preco"></i>Preço CEPEA diário (R$, eixo direito)</span>' : ''}
-    </div>
     <div class="tooltip" id="${tooltipId}"></div>
   `;
   host.innerHTML = svg;
   host.style.position = 'relative';
 
   const tooltipEl = document.getElementById(tooltipId);
-  host.querySelectorAll('[data-tipo]').forEach(el => {
-    el.addEventListener('mouseenter', () => {
-      const tipo = el.dataset.tipo;
-      let cx, cy, texto;
-      if (tipo === 'producao') {
-        const i = parseInt(el.dataset.i, 10);
-        cx = xCenter(i); cy = yProd(producaoVals[i]);
-        texto = `${categorias[i]}: ${fmt(producaoVals[i], 0)} mil ton`;
-      } else {
-        const p = precoTodos[parseInt(el.dataset.k, 10)];
-        cx = p.x; cy = yPreco(p.valor);
-        const [ano, mes, dia] = p.data.split('-');
-        texto = `${dia}/${mes}/${ano}: R$ ${fmt(p.valor)}`;
-      }
+  host.querySelectorAll('.combo-preco-dot').forEach(dot => {
+    dot.addEventListener('mouseenter', () => {
+      const p = precoTodos[parseInt(dot.dataset.k, 10)];
+      const cx = parseFloat(dot.getAttribute('cx')), cy = parseFloat(dot.getAttribute('cy'));
+      const [ano, mes, dia] = p.data.split('-');
       tooltipEl.style.left = (cx / W * 100) + '%';
       tooltipEl.style.top = (cy / H * 100) + '%';
-      tooltipEl.textContent = texto;
+      tooltipEl.textContent = `${dia}/${mes}/${ano}: R$ ${fmt(p.valor)}`;
       tooltipEl.style.opacity = '1';
     });
-    el.addEventListener('mouseleave', () => { tooltipEl.style.opacity = '0'; });
+    dot.addEventListener('mouseleave', () => { tooltipEl.style.opacity = '0'; });
   });
 }
 
