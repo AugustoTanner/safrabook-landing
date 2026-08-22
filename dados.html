@@ -195,12 +195,9 @@
     .combo-barra { fill: var(--green); opacity: 0.85; }
     .combo-preco-linha { fill: none; stroke: var(--yellow2); stroke-width: 2.5; stroke-linecap: round; }
     .combo-preco-dot { fill: var(--yellow2); stroke: var(--white); stroke-width: 1.5; }
-    .combo-preco-ref { stroke: var(--blue); stroke-width: 1; stroke-dasharray: 3,4; opacity: 0.4; }
-    .combo-preco-ref-label { font-size: 9px; fill: var(--blue); font-family: 'Inter', sans-serif; opacity: 0.7; }
     .chart-legenda { display: flex; flex-wrap: wrap; gap: 0.9rem; margin-top: 0.75rem; font-size: 0.75rem; color: var(--gray); }
     .leg-dot { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 0.35rem; vertical-align: -1px; }
     .leg-barra { background: var(--green); opacity: 0.85; }
-    .leg-trend { background: var(--blue); }
     .leg-preco { background: var(--yellow2); }
     .chart-sub { font-size: 0.72rem; color: var(--gray); margin: 0.15rem 0 0.9rem; line-height: 1.5; }
     .tooltip {
@@ -696,16 +693,15 @@ function agruparPrecoPorSafra(linhasPreco) {
   return porSafra;
 }
 
-// Gráfico único: produção em barra (eixo esquerdo, mil ton) + preço em
-// linha (eixo direito, R$) + 3 linhas de referência do preço (média/mín/máx
-// de todos os dias já registrados). Cada safra com preço vira uma "faixa"
-// no eixo X — dentro dela, todo dia real vira um ponto da linha, espalhado
-// da esquerda pra direita em ordem cronológica, então a evolução dia a dia
-// aparece mesmo quando cai tudo dentro da mesma safra (era isso que estava
-// achatado antes: virava 1 média só, escondia o movimento real). Dois
-// eixos Y só é honesto quando bem identificado (cores/legenda distintas,
-// nunca escondido) — padrão normal de relatório agro pra cruzar produção
-// com preço.
+// Gráfico único, só o essencial (pedido do Guto 22/08: "só preços e
+// produção mesmo"): produção em barra (eixo esquerdo, mil ton) + preço em
+// linha (eixo direito, R$), sem linha de referência nem tendência extra.
+// Cada safra com preço vira uma "faixa" no eixo X — dentro dela, todo dia
+// real vira um ponto da linha, espalhado da esquerda pra direita em ordem
+// cronológica, então a evolução dia a dia aparece mesmo quando cai tudo
+// dentro da mesma safra. Dois eixos Y só é honesto quando bem identificado
+// (cores/legenda distintas, nunca escondido) — padrão normal de relatório
+// agro pra cruzar produção com preço.
 function desenharComboChart(hostId, categorias, producaoMap, precoGroupedMap) {
   const host = document.getElementById(hostId);
   const W = 760, H = 260, padL = 8, padR = 8, padT = 16, padB = 26;
@@ -749,26 +745,6 @@ function desenharComboChart(hostId, categorias, producaoMap, precoGroupedMap) {
     return `<rect class="combo-barra" x="${(xCenter(i) - bw / 2).toFixed(1)}" y="${by.toFixed(1)}" width="${bw.toFixed(1)}" height="${(H - padB - by).toFixed(1)}" data-i="${i}" data-tipo="producao" style="cursor:pointer"/>`;
   }).join('');
 
-  // Linhas de referência do PREÇO (média/mínimo/máximo de TODOS os dias já
-  // registrados, não mais de uma média por safra) — substituem a antiga
-  // "tendência" (que era média móvel da produção e só repetia o formato
-  // das barras, confuso). Com pouca variação os 3 valores podem coincidir
-  // — nesse caso mostra só uma linha, sem empilhar linha idêntica.
-  const precoStats = precoNums.length ? {
-    max: Math.max(...precoNums), media: precoNums.reduce((a, b) => a + b, 0) / precoNums.length, min: Math.min(...precoNums),
-  } : null;
-  let refsPreco = [];
-  if (precoStats) {
-    const candidatos = [
-      { label: 'máx.', valor: precoStats.max },
-      { label: 'méd.', valor: precoStats.media },
-      { label: 'mín.', valor: precoStats.min },
-    ];
-    candidatos.forEach(c => {
-      if (!refsPreco.some(r => Math.abs(r.valor - c.valor) < 0.01)) refsPreco.push(c);
-    });
-  }
-
   const precoPath = precoTodos.length > 1
     ? precoTodos.map((p, i) => (i === 0 ? 'M' : 'L') + p.x.toFixed(1) + ',' + yPreco(p.valor).toFixed(1)).join(' ')
     : '';
@@ -779,19 +755,13 @@ function desenharComboChart(hostId, categorias, producaoMap, precoGroupedMap) {
     <svg class="trend" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none">
       <line class="trend-grid" x1="${padL}" y1="${H - padB}" x2="${W - padR}" y2="${H - padB}" />
       ${barras}
-      ${refsPreco.map(r => {
-        const y = yPreco(r.valor);
-        return `<line class="combo-preco-ref" x1="${padL}" y1="${y.toFixed(1)}" x2="${W - padR}" y2="${y.toFixed(1)}" />
-                <text class="combo-preco-ref-label" x="${W - padR}" y="${(y - 3).toFixed(1)}" text-anchor="end">${r.label} R$ ${fmt(r.valor)}</text>`;
-      }).join('')}
       ${precoPath ? `<path class="combo-preco-linha" d="${precoPath}" />` : ''}
-      ${precoTodos.map((p, k) => `<circle class="combo-preco-dot" cx="${p.x.toFixed(1)}" cy="${yPreco(p.valor).toFixed(1)}" r="${precoTodos.length === 1 ? 5 : 2.5}" data-k="${k}" data-tipo="preco" style="cursor:pointer"/>`).join('')}
+      ${precoTodos.map((p, k) => `<circle class="combo-preco-dot" cx="${p.x.toFixed(1)}" cy="${yPreco(p.valor).toFixed(1)}" r="${precoTodos.length === 1 ? 5 : 3}" data-k="${k}" data-tipo="preco" style="cursor:pointer"/>`).join('')}
       ${categorias.map((c, i) => `<text class="trend-axis-label" x="${xCenter(i)}" y="${H - 8}" text-anchor="middle">${c}</text>`).join('')}
     </svg>
     <div class="chart-legenda">
       <span><i class="leg-dot leg-barra"></i>Produção (mil ton, eixo esquerdo)</span>
       ${precoTodos.length ? '<span><i class="leg-dot leg-preco"></i>Preço CEPEA diário (R$, eixo direito)</span>' : ''}
-      ${refsPreco.length > 1 ? '<span><i class="leg-dot leg-trend"></i>Méd./mín./máx. do preço já registrado</span>' : ''}
     </div>
     <div class="tooltip" id="${tooltipId}"></div>
   `;
