@@ -197,9 +197,6 @@
     .combo-preco-dot { fill: var(--yellow2); stroke: var(--white); stroke-width: 1.5; }
     .combo-preco-ref { stroke: var(--blue); stroke-width: 1; stroke-dasharray: 3,4; opacity: 0.4; }
     .combo-preco-ref-label { font-size: 9px; fill: var(--blue); font-family: 'Inter', sans-serif; opacity: 0.7; }
-    .combo-variacao { font-size: 9px; font-weight: 700; font-family: 'Inter', sans-serif; }
-    .combo-variacao-up { fill: var(--up); }
-    .combo-variacao-down { fill: var(--down); }
     .chart-legenda { display: flex; flex-wrap: wrap; gap: 0.9rem; margin-top: 0.75rem; font-size: 0.75rem; color: var(--gray); }
     .leg-dot { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 0.35rem; vertical-align: -1px; }
     .leg-barra { background: var(--green); opacity: 0.85; }
@@ -596,19 +593,19 @@ async function selecionarProduto(produto) {
     : null;
 
   const produtoPreco = CEPEA_MATCH[produto];
-  let precoPorSafra = {};
+  let precoPorSafra = {}; // safra -> [{data, preco}, ...] (todos os dias reais, ver agruparPrecoPorSafra)
   if (produtoPreco) {
     if (!precoCache[produtoPreco]) {
       precoCache[produtoPreco] = await buscarTudoPaginado(
         `${SUPABASE_URL}/rest/v1/cotacoes_historico?grupo=eq.cepea_nacional&produto=eq.${produtoPreco}&order=data.asc&select=data,preco`
       );
     }
-    precoPorSafra = agregarPrecoPorSafra(precoCache[produtoPreco] || []);
+    precoPorSafra = agruparPrecoPorSafra(precoCache[produtoPreco] || []);
   }
   // Uma categoria por eixo X = união dos anos com produção + anos com preço.
   // Hoje isso normalmente NÃO se sobrepõe: CONAB só publica safra fechada,
   // CEPEA começou a registrar preço em 20/08/2026 — o preço aparece isolado
-  // até a série de anos crescer (ver agregarPrecoPorSafra).
+  // até a série de anos crescer (ver agruparPrecoPorSafra).
   const categorias = Array.from(new Set([...anos, ...Object.keys(precoPorSafra)])).sort();
   const temPreco = Object.keys(precoPorSafra).length > 0;
 
@@ -651,8 +648,8 @@ async function selecionarProduto(produto) {
     <div class="chart-wrap">
       <div class="chart-title">Produção × preço por safra</div>
       <div class="chart-sub">
-        CONAB (produção, barra, série completa) + CEPEA (preço médio, linha)${temPreco ? '' : ' — preço ainda sem dado nessa cultura'}.
-        Preço começou a ser registrado em 20/08/2026, cresce um dia por vez — pode aparecer isolado até acumular mais safras.
+        CONAB (produção, barra, série completa) + CEPEA (preço diário, linha)${temPreco ? '' : ' — preço ainda sem dado nessa cultura'}.
+        Preço começou a ser registrado em 20/08/2026 — os dias já registrados aparecem como uma linha dentro da safra atual.
       </div>
       <div id="chartCombo"></div>
     </div>
@@ -680,45 +677,69 @@ let precoCache = {}; // produto cepea -> linhas
 // de grão, cuja comercialização do ano corrente acontece durante o ano
 // civil seguinte ao plantio (ex: preço de agosto/2026 → safra "2025/26").
 // É uma aproximação (cada cultura tem calendário próprio), suficiente pra
-// alinhar visualmente até o preço acumular anos suficientes pra virar uma
-// média por safra de verdade, cultura por cultura.
-function agregarPrecoPorSafra(linhasPreco) {
+// alinhar visualmente até o preço acumular anos suficientes pra virar mais
+// de uma safra, cultura por cultura.
+//
+// IMPORTANTE: mantém cada dia como um ponto separado (não vira média) —
+// a CEPEA manda ~15 dias reais de uma vez só quando o pipeline busca pela
+// primeira vez (ver cotacoes-pipeline/pipeline.py), então já dá pra
+// mostrar a evolução dia a dia dentro da mesma safra, não só um número
+// achatado.
+function agruparPrecoPorSafra(linhasPreco) {
   const porSafra = {};
   linhasPreco.forEach(l => {
     const ano = parseInt(l.data.split('-')[0], 10);
     const safra = `${ano - 1}/${String(ano).slice(2)}`;
-    (porSafra[safra] ??= []).push(l.preco);
+    (porSafra[safra] ??= []).push({ data: l.data, preco: l.preco });
   });
-  const medias = {};
-  Object.entries(porSafra).forEach(([safra, valores]) => {
-    medias[safra] = valores.reduce((a, b) => a + b, 0) / valores.length;
-  });
-  return medias;
+  Object.values(porSafra).forEach(arr => arr.sort((a, b) => a.data.localeCompare(b.data)));
+  return porSafra;
 }
 
 // Gráfico único: produção em barra (eixo esquerdo, mil ton) + preço em
-// linha (eixo direito, R$, só conectando anos com dado real) + 3 linhas de
-// referência do preço (média/mín/máx) + variação % ano a ano como "tendência"
-// real, sem projeção. Dois eixos Y só é honesto quando bem identificado
-// (cores/legenda distintas, nunca escondido) — padrão normal de relatório
-// agro pra cruzar produção com preço.
-function desenharComboChart(hostId, categorias, producaoMap, precoMap) {
+// linha (eixo direito, R$) + 3 linhas de referência do preço (média/mín/máx
+// de todos os dias já registrados). Cada safra com preço vira uma "faixa"
+// no eixo X — dentro dela, todo dia real vira um ponto da linha, espalhado
+// da esquerda pra direita em ordem cronológica, então a evolução dia a dia
+// aparece mesmo quando cai tudo dentro da mesma safra (era isso que estava
+// achatado antes: virava 1 média só, escondia o movimento real). Dois
+// eixos Y só é honesto quando bem identificado (cores/legenda distintas,
+// nunca escondido) — padrão normal de relatório agro pra cruzar produção
+// com preço.
+function desenharComboChart(hostId, categorias, producaoMap, precoGroupedMap) {
   const host = document.getElementById(hostId);
   const W = 760, H = 260, padL = 8, padR = 8, padT = 16, padB = 26;
   const n = categorias.length;
   if (n === 0) { host.innerHTML = '<div class="erro-msg">Sem dados pra mostrar ainda.</div>'; return; }
 
   const producaoVals = categorias.map(c => producaoMap[c] ?? null);
-  const precoVals = categorias.map(c => precoMap[c] ?? null);
   const producaoNums = producaoVals.filter(v => v != null);
-  const precoNums = precoVals.filter(v => v != null);
   const maxProd = Math.max(...producaoNums, 1) * 1.08;
-  const maxPreco = Math.max(...precoNums, 1) * 1.15;
-  const minPreco = Math.min(...precoNums, 0) * 0.9;
 
   const bandW = (W - padL - padR) / n;
   const xCenter = i => padL + bandW * (i + 0.5);
   const yProd = v => padT + (1 - v / maxProd) * (H - padT - padB);
+
+  // Achata os pontos de preço de todas as categorias numa lista só, já com
+  // a posição X calculada — espalhados dentro de ~70% da largura da banda
+  // da própria safra, em ordem cronológica (1 ponto só fica centralizado).
+  const LARGURA_FAIXA = 0.7;
+  const precoTodos = [];
+  categorias.forEach((c, i) => {
+    const pontos = precoGroupedMap[c];
+    if (!pontos || !pontos.length) return;
+    const largura = bandW * LARGURA_FAIXA;
+    pontos.forEach((p, k) => {
+      const x = pontos.length > 1
+        ? xCenter(i) - largura / 2 + (k / (pontos.length - 1)) * largura
+        : xCenter(i);
+      precoTodos.push({ x, valor: p.preco, data: p.data });
+    });
+  });
+
+  const precoNums = precoTodos.map(p => p.valor);
+  const maxPreco = Math.max(...precoNums, 1) * 1.15;
+  const minPreco = Math.min(...precoNums, 0) * 0.9;
   const yPreco = v => padT + (1 - (v - minPreco) / ((maxPreco - minPreco) || 1)) * (H - padT - padB);
 
   const barras = categorias.map((c, i) => {
@@ -728,11 +749,11 @@ function desenharComboChart(hostId, categorias, producaoMap, precoMap) {
     return `<rect class="combo-barra" x="${(xCenter(i) - bw / 2).toFixed(1)}" y="${by.toFixed(1)}" width="${bw.toFixed(1)}" height="${(H - padB - by).toFixed(1)}" data-i="${i}" data-tipo="producao" style="cursor:pointer"/>`;
   }).join('');
 
-  // Linhas de referência do PREÇO (média/mínimo/máximo já registrados) —
-  // substituem a antiga "tendência" (que era média móvel da produção e só
-  // repetia o formato das barras, confuso: parecia uma 2ª série de dados
-  // quando era quase igual à 1ª). Com poucos pontos de preço as 3 podem
-  // coincidir — nesse caso mostra só uma, sem empilhar linha idêntica.
+  // Linhas de referência do PREÇO (média/mínimo/máximo de TODOS os dias já
+  // registrados, não mais de uma média por safra) — substituem a antiga
+  // "tendência" (que era média móvel da produção e só repetia o formato
+  // das barras, confuso). Com pouca variação os 3 valores podem coincidir
+  // — nesse caso mostra só uma linha, sem empilhar linha idêntica.
   const precoStats = precoNums.length ? {
     max: Math.max(...precoNums), media: precoNums.reduce((a, b) => a + b, 0) / precoNums.length, min: Math.min(...precoNums),
   } : null;
@@ -748,25 +769,9 @@ function desenharComboChart(hostId, categorias, producaoMap, precoMap) {
     });
   }
 
-  // Só conecta os anos que TÊM preço de verdade — pula direto os anos sem
-  // dado no meio (sem inventar zero nem traço artificial), então a linha
-  // liga o último ponto real ao próximo ponto real, não importa a distância
-  // entre eles no eixo X.
-  const idxPreco = categorias.map((c, i) => i).filter(i => precoVals[i] != null);
-  const precoPontos = idxPreco.map(i => [xCenter(i), yPreco(precoVals[i])]);
-  const precoPath = precoPontos.length > 1
-    ? precoPontos.map((p, i) => (i === 0 ? 'M' : 'L') + p[0].toFixed(1) + ',' + p[1].toFixed(1)).join(' ')
+  const precoPath = precoTodos.length > 1
+    ? precoTodos.map((p, i) => (i === 0 ? 'M' : 'L') + p.x.toFixed(1) + ',' + yPreco(p.valor).toFixed(1)).join(' ')
     : '';
-
-  // "Tendência" = variação % do preço real de um ponto conhecido pro
-  // próximo (não é média móvel nem projeção com futuros — só o que já
-  // aconteceu de fato). Só existe rótulo a partir do 2º ponto de preço.
-  const variacoesPreco = idxPreco.map((idx, pos) => {
-    if (pos === 0) return null;
-    const anterior = precoVals[idxPreco[pos - 1]];
-    const atual = precoVals[idx];
-    return ((atual - anterior) / anterior) * 100;
-  });
 
   const tooltipId = hostId + 'Tooltip';
 
@@ -780,17 +785,13 @@ function desenharComboChart(hostId, categorias, producaoMap, precoMap) {
                 <text class="combo-preco-ref-label" x="${W - padR}" y="${(y - 3).toFixed(1)}" text-anchor="end">${r.label} R$ ${fmt(r.valor)}</text>`;
       }).join('')}
       ${precoPath ? `<path class="combo-preco-linha" d="${precoPath}" />` : ''}
-      ${precoPontos.map((p, k) => `<circle class="combo-preco-dot" cx="${p[0]}" cy="${p[1]}" r="${precoPontos.length === 1 ? 5 : 3.5}" data-i="${idxPreco[k]}" data-tipo="preco" style="cursor:pointer"/>`).join('')}
-      ${precoPontos.map((p, k) => variacoesPreco[k] != null
-        ? `<text class="combo-variacao ${variacoesPreco[k] >= 0 ? 'combo-variacao-up' : 'combo-variacao-down'}" x="${p[0]}" y="${(p[1] - 9).toFixed(1)}" text-anchor="middle">${variacoesPreco[k] >= 0 ? '▲' : '▼'} ${Math.abs(variacoesPreco[k]).toFixed(1)}%</text>`
-        : '').join('')}
+      ${precoTodos.map((p, k) => `<circle class="combo-preco-dot" cx="${p.x.toFixed(1)}" cy="${yPreco(p.valor).toFixed(1)}" r="${precoTodos.length === 1 ? 5 : 2.5}" data-k="${k}" data-tipo="preco" style="cursor:pointer"/>`).join('')}
       ${categorias.map((c, i) => `<text class="trend-axis-label" x="${xCenter(i)}" y="${H - 8}" text-anchor="middle">${c}</text>`).join('')}
     </svg>
     <div class="chart-legenda">
       <span><i class="leg-dot leg-barra"></i>Produção (mil ton, eixo esquerdo)</span>
-      ${precoPontos.length ? '<span><i class="leg-dot leg-preco"></i>Preço CEPEA (R$, eixo direito)</span>' : ''}
+      ${precoTodos.length ? '<span><i class="leg-dot leg-preco"></i>Preço CEPEA diário (R$, eixo direito)</span>' : ''}
       ${refsPreco.length > 1 ? '<span><i class="leg-dot leg-trend"></i>Méd./mín./máx. do preço já registrado</span>' : ''}
-      ${variacoesPreco.some(v => v != null) ? '<span>▲▼ Variação em relação à safra de preço anterior</span>' : ''}
     </div>
     <div class="tooltip" id="${tooltipId}"></div>
   `;
@@ -800,15 +801,17 @@ function desenharComboChart(hostId, categorias, producaoMap, precoMap) {
   const tooltipEl = document.getElementById(tooltipId);
   host.querySelectorAll('[data-tipo]').forEach(el => {
     el.addEventListener('mouseenter', () => {
-      const i = parseInt(el.dataset.i, 10);
       const tipo = el.dataset.tipo;
       let cx, cy, texto;
       if (tipo === 'producao') {
+        const i = parseInt(el.dataset.i, 10);
         cx = xCenter(i); cy = yProd(producaoVals[i]);
         texto = `${categorias[i]}: ${fmt(producaoVals[i], 0)} mil ton`;
       } else {
-        cx = xCenter(i); cy = yPreco(precoVals[i]);
-        texto = `${categorias[i]}: R$ ${fmt(precoVals[i])} (médio)`;
+        const p = precoTodos[parseInt(el.dataset.k, 10)];
+        cx = p.x; cy = yPreco(p.valor);
+        const [ano, mes, dia] = p.data.split('-');
+        texto = `${dia}/${mes}/${ano}: R$ ${fmt(p.valor)}`;
       }
       tooltipEl.style.left = (cx / W * 100) + '%';
       tooltipEl.style.top = (cy / H * 100) + '%';
