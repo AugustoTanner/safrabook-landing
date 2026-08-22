@@ -193,9 +193,10 @@
 
     /* ── GRÁFICO COMBINADO (produção x preço) ── */
     .combo-barra { fill: var(--green); opacity: 0.85; }
-    .combo-trend { fill: none; stroke: var(--blue); stroke-width: 2; stroke-linecap: round; stroke-dasharray: 5,4; }
     .combo-preco-linha { fill: none; stroke: var(--yellow2); stroke-width: 2.5; stroke-linecap: round; }
     .combo-preco-dot { fill: var(--yellow2); stroke: var(--white); stroke-width: 1.5; }
+    .combo-preco-ref { stroke: var(--blue); stroke-width: 1; stroke-dasharray: 3,4; opacity: 0.4; }
+    .combo-preco-ref-label { font-size: 9px; fill: var(--blue); font-family: 'Inter', sans-serif; opacity: 0.7; }
     .chart-legenda { display: flex; flex-wrap: wrap; gap: 0.9rem; margin-top: 0.75rem; font-size: 0.75rem; color: var(--gray); }
     .leg-dot { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 0.35rem; vertical-align: -1px; }
     .leg-barra { background: var(--green); opacity: 0.85; }
@@ -723,16 +724,25 @@ function desenharComboChart(hostId, categorias, producaoMap, precoMap) {
     return `<rect class="combo-barra" x="${(xCenter(i) - bw / 2).toFixed(1)}" y="${by.toFixed(1)}" width="${bw.toFixed(1)}" height="${(H - padB - by).toFixed(1)}" data-i="${i}" data-tipo="producao" style="cursor:pointer"/>`;
   }).join('');
 
-  // Tendência = média móvel (janela 3) só sobre os pontos que têm produção.
-  const idxProd = categorias.map((c, i) => i).filter(i => producaoVals[i] != null);
-  const trendPontos = idxProd.map((idx, pos) => {
-    const janela = idxProd.slice(Math.max(0, pos - 1), pos + 2).map(j => producaoVals[j]);
-    const media = janela.reduce((a, b) => a + b, 0) / janela.length;
-    return [xCenter(idx), yProd(media)];
-  });
-  const trendPath = trendPontos.length > 1
-    ? trendPontos.map((p, i) => (i === 0 ? 'M' : 'L') + p[0].toFixed(1) + ',' + p[1].toFixed(1)).join(' ')
-    : '';
+  // Linhas de referência do PREÇO (média/mínimo/máximo já registrados) —
+  // substituem a antiga "tendência" (que era média móvel da produção e só
+  // repetia o formato das barras, confuso: parecia uma 2ª série de dados
+  // quando era quase igual à 1ª). Com poucos pontos de preço as 3 podem
+  // coincidir — nesse caso mostra só uma, sem empilhar linha idêntica.
+  const precoStats = precoNums.length ? {
+    max: Math.max(...precoNums), media: precoNums.reduce((a, b) => a + b, 0) / precoNums.length, min: Math.min(...precoNums),
+  } : null;
+  let refsPreco = [];
+  if (precoStats) {
+    const candidatos = [
+      { label: 'máx.', valor: precoStats.max },
+      { label: 'méd.', valor: precoStats.media },
+      { label: 'mín.', valor: precoStats.min },
+    ];
+    candidatos.forEach(c => {
+      if (!refsPreco.some(r => Math.abs(r.valor - c.valor) < 0.01)) refsPreco.push(c);
+    });
+  }
 
   const idxPreco = categorias.map((c, i) => i).filter(i => precoVals[i] != null);
   const precoPontos = idxPreco.map(i => [xCenter(i), yPreco(precoVals[i])]);
@@ -753,15 +763,19 @@ function desenharComboChart(hostId, categorias, producaoMap, precoMap) {
     <svg class="trend" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none">
       <line class="trend-grid" x1="${padL}" y1="${H - padB}" x2="${W - padR}" y2="${H - padB}" />
       ${barras}
-      ${trendPath ? `<path class="combo-trend" d="${trendPath}" />` : ''}
+      ${refsPreco.map(r => {
+        const y = yPreco(r.valor);
+        return `<line class="combo-preco-ref" x1="${padL}" y1="${y.toFixed(1)}" x2="${W - padR}" y2="${y.toFixed(1)}" />
+                <text class="combo-preco-ref-label" x="${W - padR}" y="${(y - 3).toFixed(1)}" text-anchor="end">${r.label} R$ ${fmt(r.valor)}</text>`;
+      }).join('')}
       ${precoPath ? `<path class="combo-preco-linha" d="${precoPath}" />` : ''}
       ${precoPontos.map((p, k) => `<circle class="combo-preco-dot" cx="${p[0]}" cy="${p[1]}" r="${precoPontos.length === 1 ? 5 : 3.5}" data-i="${idxPreco[k]}" data-tipo="preco" style="cursor:pointer"/>`).join('')}
       ${categorias.map((c, i) => `<text class="trend-axis-label" x="${xCenter(i)}" y="${H - 8}" text-anchor="middle">${c}</text>`).join('')}
     </svg>
     <div class="chart-legenda">
       <span><i class="leg-dot leg-barra"></i>Produção (mil ton, eixo esquerdo)</span>
-      ${trendPath ? '<span><i class="leg-dot leg-trend"></i>Tendência (média móvel)</span>' : ''}
-      ${precoPontos.length ? '<span><i class="leg-dot leg-preco"></i>Preço médio CEPEA (R$, eixo direito)</span>' : ''}
+      ${precoPontos.length ? '<span><i class="leg-dot leg-preco"></i>Preço CEPEA (R$, eixo direito)</span>' : ''}
+      ${refsPreco.length > 1 ? '<span><i class="leg-dot leg-trend"></i>Méd./mín./máx. do preço já registrado</span>' : ''}
     </div>
     <div class="tooltip" id="${tooltipId}"></div>
   `;
