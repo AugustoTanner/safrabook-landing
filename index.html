@@ -361,6 +361,9 @@
     }
 
     .how-inner { position: relative; z-index: 2; }
+    .how-prestador { background: var(--green2); }
+    .how-prestador::before { background: linear-gradient(135deg, rgba(0,48,135,0.35) 0%, transparent 60%); }
+    .how-prestador .step p { color: rgba(255,255,255,0.68); }
 
     .how h2 {
       font-size: clamp(1.75rem, 3vw, 2.5rem);
@@ -746,6 +749,30 @@
     <div class="quem-tag">📦 Frigoríficos e tradings</div>
     <div class="quem-tag">🐎 Criadores de cavalos</div>
     <div class="quem-tag">🏦 Bancos e seguradoras</div>
+  </div>
+</section>
+
+<!-- COMO FUNCIONA — PRESTADOR -->
+<section class="how how-prestador">
+  <div class="how-inner">
+    <h2>É consultor, agrônomo ou técnico?<br>Assim funciona pra você</h2>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <h3>Cadastre a fazenda do cliente</h3>
+        <p>Já sabe o CAR? Cadastra em segundos — antes mesmo do seu cliente ter conta no SafraBook.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <h3>Mostre na mão dele</h3>
+        <p>Fotos, mapa e relatórios prontos. Ele vê o valor na hora, sem custo nenhum pra ele.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <h3>Ele assume quando quiser</h3>
+        <p>Sem duplicar cadastro e sem custo extra pra você até lá — o cliente só assume a fazenda (e a cobrança dela) quando decidir usar por conta própria.</p>
+      </div>
+    </div>
   </div>
 </section>
 
