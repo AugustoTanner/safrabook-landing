@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SafraBook — Planos e valores</title>
+<meta name="description" content="Planos do SafraBook: gratuito, Proprietário e Prestador de Serviços. Valores em fase de validação.">
+<link rel="icon" href="/favicon.png" type="image/png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --green:  #006B3C;
+    --green2: #004D2C;
+    --yellow: #FFCC00;
+    --yellow2:#E6B800;
+    --dark:   #1A1A1A;
+    --gray:   #5A6473;
+    --bg:     #F5F3EE;
+    --white:  #FFFFFF;
+  }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: var(--bg);
+    color: var(--dark);
+    line-height: 1.6;
+  }
+
+  nav {
+    background: var(--green2);
+    padding: 0.9rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    border-bottom: 3px solid var(--yellow);
+  }
+  .logo { color: var(--white); font-size: 1.5rem; font-weight: 900; letter-spacing: -0.5px; }
+  .logo span { color: var(--yellow); }
+  .nav-btn {
+    background: var(--yellow); color: var(--dark);
+    padding: 0.5rem 1.25rem; border-radius: 8px;
+    font-weight: 700; font-size: 0.875rem; text-decoration: none;
+    transition: background 0.2s;
+  }
+  .nav-btn:hover { background: var(--yellow2); }
+
+  .hero {
+    background: var(--green2); color: var(--white);
+    padding: 3.5rem 2rem 3rem; text-align: center;
+  }
+  .hero h1 { font-size: clamp(1.9rem, 4vw, 2.75rem); font-weight: 900; letter-spacing: -1px; margin-bottom: 0.75rem; }
+  .hero p { color: rgba(255,255,255,0.75); max-width: 560px; margin: 0 auto; font-size: 1rem; }
+
+  .aviso {
+    max-width: 720px; margin: 1.5rem auto 0; background: rgba(255,204,0,0.12);
+    border: 1px solid rgba(255,204,0,0.4); border-radius: 10px;
+    padding: 0.9rem 1.25rem; font-size: 0.875rem; color: var(--yellow);
+  }
+
+  .section { padding: 3.5rem 2rem; max-width: 1000px; margin: 0 auto; }
+  .section h2 { font-size: clamp(1.4rem, 2.5vw, 1.8rem); font-weight: 800; letter-spacing: -0.5px; margin-bottom: 0.5rem; }
+  .section .sub { color: var(--gray); font-size: 0.9375rem; margin-bottom: 1.75rem; max-width: 640px; }
+
+  .plano-gratuito {
+    background: var(--white); border-radius: 16px; padding: 1.75rem 2rem;
+    border: 1px solid rgba(0,0,0,0.06); border-left: 4px solid var(--green); margin-bottom: 1rem;
+  }
+  .plano-gratuito .nome { font-weight: 800; font-size: 1.1rem; }
+  .plano-gratuito .preco { font-size: 1.5rem; font-weight: 900; color: var(--green); margin: 0.35rem 0 0.9rem; }
+  .beneficios { list-style: none; display: flex; flex-direction: column; gap: 0.4rem; }
+  .beneficios li { font-size: 0.9rem; color: var(--dark); }
+  .beneficios li::before { content: '✓ '; color: var(--green); font-weight: 700; }
+
+  .faixas { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1.1rem; margin-top: 1.1rem; }
+  .faixa {
+    background: var(--white); border-radius: 14px; padding: 1.5rem;
+    border: 1px solid rgba(0,0,0,0.06); position: relative;
+  }
+  .faixa.destaque { border: 2px solid var(--yellow2); }
+  .faixa .selo {
+    position: absolute; top: -11px; left: 1.25rem; background: var(--yellow2);
+    color: var(--dark); font-size: 0.65rem; font-weight: 800; letter-spacing: 0.5px;
+    padding: 0.25rem 0.6rem; border-radius: 20px; text-transform: uppercase;
+  }
+  .faixa .nome { font-weight: 700; font-size: 1rem; margin-bottom: 0.25rem; }
+  .faixa .detalhe { font-size: 0.8125rem; color: var(--gray); margin-bottom: 0.9rem; }
+  .faixa .preco { font-size: 1.5rem; font-weight: 900; color: var(--dark); }
+  .faixa .preco span { font-size: 0.8rem; font-weight: 600; color: var(--gray); }
+
+  .cta {
+    text-align: center; padding: 3rem 2rem 4.5rem;
+  }
+  .cta h2 { font-size: 1.5rem; font-weight: 800; margin-bottom: 0.6rem; }
+  .cta p { color: var(--gray); margin-bottom: 1.5rem; }
+  .cta a.btn {
+    display: inline-block; background: var(--green); color: var(--white);
+    padding: 0.9rem 2.25rem; border-radius: 10px; font-weight: 700;
+    text-decoration: none; font-size: 1rem;
+  }
+
+  footer {
+    text-align: center; padding: 2.5rem 1.5rem; font-size: 0.8125rem;
+    color: var(--gray); border-top: 1px solid rgba(0,0,0,0.06);
+  }
+  footer a { color: var(--green); text-decoration: none; font-weight: 600; }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="logo">Safra<span>Book</span></div>
+  <div style="display:flex;align-items:center;gap:1.25rem">
+    <a href="/dados.html" class="nav-btn">Dados do agro</a>
+    <a href="/#lista" class="nav-btn">Quero acesso</a>
+  </div>
+</nav>
+
+<section class="hero">
+  <h1>Planos e valores</h1>
+  <p>O app é e continua gratuito pra usar. Esses são os planos pra quem quer mais espaço e recursos pra gerenciar equipe e propriedades.</p>
+  <div class="aviso">⚠️ Valores ainda em fase de validação — podem mudar. Ativação hoje é manual, fala com a gente pra ativar.</div>
+</section>
+
+<section class="section">
+  <h2>Gratuito</h2>
+  <p class="sub">Pra começar sem custo nenhum</p>
+  <div class="plano-gratuito">
+    <div class="nome">Plano Gratuito</div>
+    <div class="preco">R$ 0</div>
+    <ul class="beneficios">
+      <li>Cadastro de propriedade pelo CAR</li>
+      <li>Fotos com GPS</li>
+      <li>Mapa com verificação automática do CAR e Ibama</li>
+      <li>4 relatórios por mês</li>
+      <li>1 GB de espaço de armazenamento</li>
+    </ul>
+  </div>
+</section>
+
+<section class="section">
+  <h2>🧑‍🌾 Plano Proprietário</h2>
+  <p class="sub">Pra quem cuida da própria fazenda — faixa por número de pessoas com acesso (você + sócios + funcionários)</p>
+  <ul class="beneficios" style="margin-bottom:0.5rem">
+    <li>Central de documentos da fazenda</li>
+    <li>Verificação de titularidade prioritária</li>
+    <li>Relatórios ilimitados</li>
+    <li>Anúncios ilimitados pra vendas</li>
+  </ul>
+  <div class="faixas">
+    <div class="faixa">
+      <div class="nome">Proprietário Solo</div>
+      <div class="detalhe">até 1 pessoa · 3 GB</div>
+      <div class="preco">R$ 79<span>/mês</span></div>
+    </div>
+    <div class="faixa destaque">
+      <div class="selo">Mais escolhido</div>
+      <div class="nome">Proprietário Família</div>
+      <div class="detalhe">até 4 pessoas · 6 GB</div>
+      <div class="preco">R$ 200<span>/mês</span></div>
+    </div>
+    <div class="faixa">
+      <div class="nome">Proprietário Equipe</div>
+      <div class="detalhe">até 10 pessoas · 15 GB</div>
+      <div class="preco">R$ 400<span>/mês</span></div>
+    </div>
+  </div>
+  <p class="sub" style="margin-top:1rem;margin-bottom:0;font-style:italic">Mais de 10 pessoas na fazenda? Fala com a gente.</p>
+</section>
+
+<section class="section">
+  <h2>🔧 Plano Prestador de Serviços</h2>
+  <p class="sub">Pra consultor, agrônomo, corretor ou banco acompanhando fazendas de terceiros — faixa por número de fazendas monitoradas</p>
+  <ul class="beneficios" style="margin-bottom:0.5rem">
+    <li>Central de documentos da fazenda</li>
+    <li>Verificação de titularidade prioritária</li>
+    <li>Relatórios ilimitados</li>
+    <li>Anúncios ilimitados pra vendas</li>
+    <li>Consulta de CAR pra novas fazendas</li>
+    <li>Selo de profissional verificado</li>
+  </ul>
+  <div class="faixas">
+    <div class="faixa">
+      <div class="nome">Prestador Starter</div>
+      <div class="detalhe">até 5 fazendas · até 3 pessoas por fazenda · 10 GB</div>
+      <div class="preco">R$ 250<span>/mês</span></div>
+    </div>
+    <div class="faixa">
+      <div class="nome">Prestador Pro</div>
+      <div class="detalhe">até 15 fazendas · até 3 pessoas por fazenda · 25 GB</div>
+      <div class="preco">R$ 600<span>/mês</span></div>
+    </div>
+    <div class="faixa">
+      <div class="nome">Prestador Corporativo</div>
+      <div class="detalhe">fazendas ilimitadas · equipe própria vinculada à empresa</div>
+      <div class="preco" style="font-size:1.15rem">Sob consulta</div>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <h2>Precisa de mais espaço?</h2>
+  <p class="sub">Chegou no limite da sua faixa? Compra um bloco extra sem precisar trocar de plano.</p>
+  <div class="faixas">
+    <div class="faixa">
+      <div class="nome">+5 GB extra</div>
+      <div class="detalhe">Some ao espaço da sua faixa atual</div>
+      <div class="preco">R$ 30<span>/mês</span></div>
+    </div>
+  </div>
+</section>
+
+<section class="cta">
+  <h2>Quer ativar algum plano?</h2>
+  <p>A cobrança automática ainda não está pronta — fala com a gente por email que ativamos pra você.</p>
+  <a class="btn" href="mailto:safrabook.app@gmail.com?subject=Quero%20ativar%20um%20plano%20SafraBook">✉️ Falar com a gente</a>
+</section>
+
+<footer>
+  <strong>SafraBook</strong> — O agro brasileiro no mapa<br>
+  <a href="https://safrabook.com.br">safrabook.com.br</a> ·
+  <a href="https://instagram.com/safrabook.agro">@safrabook.agro</a> ·
+  <a href="https://youtube.com/@safrabook">YouTube @safrabook</a><br>
+  safrabook.app@gmail.com
+</footer>
+
+</body>
+</html>
