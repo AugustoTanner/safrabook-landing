@@ -226,6 +226,15 @@
       font-family: 'Inter', sans-serif; white-space: nowrap;
     }
     .form-wrap button:hover { background: var(--yellow2); }
+    .cta-btns { display: flex; gap: 0.9rem; justify-content: center; flex-wrap: wrap; }
+    .btn-cta, .btn-cta-outline {
+      display: inline-block; padding: 0.9rem 1.9rem; border-radius: 10px;
+      font-size: 1rem; font-weight: 800; text-decoration: none; font-family: 'Inter', sans-serif;
+    }
+    .btn-cta { background: var(--yellow); color: var(--dark); }
+    .btn-cta:hover { background: var(--yellow2); }
+    .btn-cta-outline { background: transparent; color: var(--white); border: 1.5px solid rgba(255,255,255,0.3); }
+    .btn-cta-outline:hover { border-color: var(--yellow); color: var(--yellow); }
     .success-msg {
       display: none; background: rgba(255,204,0,0.12); border: 1px solid var(--yellow);
       color: var(--yellow); padding: 1rem 1.5rem; border-radius: 10px; font-weight: 600;
@@ -253,7 +262,7 @@
 
 <nav>
   <a href="/index.html" class="logo">Safra<span>Book</span></a>
-  <a href="#lista" class="nav-btn">Quero acesso</a>
+  <a href="https://app.safrabook.com.br/login" class="nav-btn">Entrar</a>
 </nav>
 
 <div class="page-head">
@@ -307,16 +316,13 @@
 </section>
 
 <!-- CTA -->
-<section class="cta" id="lista">
+<section class="cta">
   <h2>Isso é só uma <span>amostra</span></h2>
   <p>O app SafraBook mostra tudo isso direto na sua fazenda no mapa, personalizado pra sua região — de graça pra começar.</p>
-  <form id="ctaForm">
-    <div class="form-wrap">
-      <input type="email" name="email" placeholder="Seu melhor email" required>
-      <button type="submit">Quero acesso antecipado</button>
-    </div>
-  </form>
-  <div class="success-msg" id="ctaSuccess">✅ Cadastro feito! Te avisamos assim que o SafraBook estiver pronto.</div>
+  <div class="cta-btns">
+    <a href="https://app.safrabook.com.br/cadastro" class="btn-cta">Criar conta grátis</a>
+    <a href="https://app.safrabook.com.br/login" class="btn-cta-outline">Já tenho conta → Entrar</a>
+  </div>
 </section>
 
 <footer>
@@ -822,17 +828,6 @@ function desenharPrecoChart(hostId, categorias, precoGroupedMap) {
     dot.addEventListener('mouseleave', () => { tooltipEl.style.opacity = '0'; });
   });
 }
-
-/* ── FORM (waitlist) ── */
-document.getElementById('ctaForm')?.addEventListener('submit', async e => {
-  e.preventDefault();
-  const form = e.target, success = document.getElementById('ctaSuccess');
-  const btn = form.querySelector('button');
-  btn.textContent = 'Enviando...'; btn.disabled = true;
-  const res = await fetch('https://formspree.io/f/xjgqvnpl', { method: 'POST', body: new FormData(form), headers: { Accept: 'application/json' } });
-  if (res.ok) { form.style.display = 'none'; success.style.display = 'block'; }
-  else { btn.textContent = 'Tente novamente'; btn.disabled = false; }
-});
 
 carregarCambio();
 carregarChicago();
