@@ -64,6 +64,13 @@
     }
     .nav-btn:hover { background: var(--yellow2); }
 
+    .nav-btn-ghost {
+      background: transparent;
+      color: var(--white);
+      border: 1.5px solid rgba(255,255,255,0.35);
+    }
+    .nav-btn-ghost:hover { background: rgba(255,255,255,0.1); }
+
     /* ── HERO ── */
     .hero {
       background: var(--green2);
@@ -209,6 +216,36 @@
       font-size: 0.8rem;
       color: rgba(255,255,255,0.4);
     }
+
+    /* ── BOTÕES DE CTA (Criar conta / Entrar) ── */
+    .cta-btns {
+      display: flex;
+      gap: 0.9rem;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    .btn-cta, .btn-cta-outline {
+      display: inline-block;
+      padding: 0.95rem 2rem;
+      border-radius: 10px;
+      font-size: 1.05rem;
+      font-weight: 800;
+      text-decoration: none;
+      font-family: 'Inter', sans-serif;
+      transition: background 0.2s, transform 0.1s, border-color 0.2s;
+    }
+    .btn-cta {
+      background: var(--yellow);
+      color: var(--dark);
+    }
+    .btn-cta:hover { background: var(--yellow2); }
+    .btn-cta:active { transform: scale(0.98); }
+    .btn-cta-outline {
+      background: transparent;
+      color: var(--white);
+      border: 1.5px solid rgba(255,255,255,0.3);
+    }
+    .btn-cta-outline:hover { border-color: var(--yellow); color: var(--yellow); }
 
     .success-msg {
       display: none;
@@ -509,6 +546,8 @@
       .brazil-map { width: 300px; opacity: 0.05; right: -60px; }
       .form-wrap { flex-direction: column; }
       .form-wrap input { min-width: 100%; }
+      .cta-btns { flex-direction: column; }
+      .btn-cta, .btn-cta-outline { text-align: center; }
       .section { padding: 3.5rem 1.25rem; }
       .how { padding: 3.5rem 1.25rem; }
     }
@@ -522,9 +561,9 @@
 <nav>
   <div class="logo">Safra<span>Book</span></div>
   <div style="display:flex;align-items:center;gap:1.25rem">
-    <a href="/planos.html" class="nav-btn">Planos</a>
-    <a href="/dados.html" class="nav-btn">Dados do agro</a>
-    <a href="#lista" class="nav-btn">Quero acesso</a>
+    <a href="/planos.html" class="nav-btn nav-btn-ghost">Planos</a>
+    <a href="/dados.html" class="nav-btn nav-btn-ghost">Dados do agro</a>
+    <a href="https://app.safrabook.com.br/login" class="nav-btn">Entrar</a>
   </div>
 </nav>
 
@@ -589,7 +628,7 @@
       <div class="flag-bar">
         <span class="g"></span><span class="y"></span><span class="b"></span>
       </div>
-      Feito para o agro brasileiro · Teste fechado aberto
+      Feito para o agro brasileiro · Grátis para começar
     </div>
 
     <h1>
@@ -604,20 +643,11 @@
       e rastreabilidade real.
     </p>
 
-    <form id="heroForm">
-      <div class="form-wrap">
-        <input type="email" name="email" placeholder="Seu melhor email" required>
-        <button type="submit">Quero ser testador</button>
-      </div>
-      <label class="lgpd-check">
-        <input type="checkbox" name="lgpd_aceite" required>
-        Li e concordo com os <a href="/termos.html" target="_blank">Termos de Uso</a> e <a href="/privacidade.html" target="_blank">Política de Privacidade</a>
-      </label>
-    </form>
-    <p class="form-note">Grátis para começar · Sem spam · Sem compromisso</p>
-    <div class="success-msg" id="heroSuccess">
-      ✅ Recebido! Vamos te adicionar como testador e mandar o convite de acesso por e-mail.
+    <div class="cta-btns">
+      <a href="https://app.safrabook.com.br/cadastro" class="btn-cta">Criar conta grátis</a>
+      <a href="https://app.safrabook.com.br/login" class="btn-cta-outline">Já tenho conta → Entrar</a>
     </div>
+    <p class="form-note">Grátis para começar · Sem cartão de crédito</p>
   </div>
 </section>
 
@@ -779,21 +809,15 @@
 
 <!-- CTA BOTTOM -->
 <section class="cta">
-  <h2>Seja um dos primeiros<br><span>a testar o SafraBook</span></h2>
-  <p>O app já está rodando em teste fechado — acesso gratuito pros primeiros testadores cadastrados.</p>
-  <form id="ctaForm">
-    <div class="form-wrap" style="justify-content:center">
-      <input type="email" name="email" placeholder="Seu email" required>
-      <button type="submit">Quero ser testador</button>
-    </div>
-    <label class="lgpd-check lgpd-light">
-      <input type="checkbox" name="lgpd_aceite" required>
-      Li e concordo com os <a href="/termos.html" target="_blank">Termos de Uso</a> e <a href="/privacidade.html" target="_blank">Política de Privacidade</a>
-    </label>
-  </form>
-  <div class="success-msg" id="ctaSuccess" style="margin-top:1.25rem">
-    ✅ Perfeito! Assim que aprovarmos, você recebe o convite de acesso por e-mail.
+  <h2>Comece a usar<br><span>o SafraBook agora</span></h2>
+  <p>Cadastre sua fazenda, tire a primeira foto e veja no mapa. Grátis pra começar.</p>
+  <div class="cta-btns" style="justify-content:center">
+    <a href="https://app.safrabook.com.br/cadastro" class="btn-cta">Criar conta grátis</a>
+    <a href="https://app.safrabook.com.br/login" class="btn-cta-outline" style="color:var(--dark);border-color:rgba(0,0,0,0.2)">Já tenho conta → Entrar</a>
   </div>
+  <label class="lgpd-check lgpd-light" style="justify-content:center;margin-top:1.25rem">
+    Ao criar conta você concorda com os <a href="/termos.html" target="_blank">Termos de Uso</a> e <a href="/privacidade.html" target="_blank">Política de Privacidade</a>
+  </label>
 </section>
 
 <!-- FOOTER -->
@@ -813,32 +837,6 @@
     });
   });
 
-  function handleForm(formId, successId) {
-    const form = document.getElementById(formId);
-    const success = document.getElementById(successId);
-    if (!form) return;
-    form.addEventListener('submit', async e => {
-      e.preventDefault();
-      const btn = form.querySelector('button');
-      btn.textContent = 'Enviando...';
-      btn.disabled = true;
-      const res = await fetch('https://formspree.io/f/xjgqvnpl', {
-        method: 'POST',
-        body: new FormData(form),
-        headers: { 'Accept': 'application/json' }
-      });
-      if (res.ok) {
-        form.style.display = 'none';
-        success.style.display = 'block';
-      } else {
-        btn.textContent = 'Tente novamente';
-        btn.disabled = false;
-      }
-    });
-  }
-
-  handleForm('heroForm', 'heroSuccess');
-  handleForm('ctaForm', 'ctaSuccess');
 </script>
 
 </body>

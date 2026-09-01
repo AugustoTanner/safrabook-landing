@@ -49,6 +49,8 @@
     transition: background 0.2s;
   }
   .nav-btn:hover { background: var(--yellow2); }
+  .nav-btn-ghost { background: transparent; color: var(--white); border: 1.5px solid rgba(255,255,255,0.35); }
+  .nav-btn-ghost:hover { background: rgba(255,255,255,0.1); }
 
   .hero {
     background: var(--green2); color: var(--white);
@@ -116,8 +118,8 @@
 <nav>
   <div class="logo">Safra<span>Book</span></div>
   <div style="display:flex;align-items:center;gap:1.25rem">
-    <a href="/dados.html" class="nav-btn">Dados do agro</a>
-    <a href="/#lista" class="nav-btn">Quero acesso</a>
+    <a href="/dados.html" class="nav-btn nav-btn-ghost">Dados do agro</a>
+    <a href="https://app.safrabook.com.br/login" class="nav-btn">Entrar</a>
   </div>
 </nav>
 
@@ -201,6 +203,36 @@
       <div class="preco" style="font-size:1.15rem">Sob consulta</div>
     </div>
   </div>
+</section>
+
+<section class="section">
+  <h2>🏢 Plano Empresa</h2>
+  <p class="sub">Pra revenda, transportadora, cooperativa ou comércio do agro — faixa por número de pessoas com acesso (dono + equipe)</p>
+  <ul class="beneficios" style="margin-bottom:0.5rem">
+    <li>Perfil de empresa com CNPJ verificado automático</li>
+    <li>Equipe com papel de Gerente ou Funcionário</li>
+    <li>Fotos da equipe reunidas no mapa</li>
+    <li>Anúncios ilimitados pra vendas</li>
+  </ul>
+  <div class="faixas">
+    <div class="faixa">
+      <div class="nome">Empresa Solo</div>
+      <div class="detalhe">até 1 pessoa · 3 GB</div>
+      <div class="preco">R$ 79<span>/mês</span></div>
+    </div>
+    <div class="faixa destaque">
+      <div class="selo">Mais escolhido</div>
+      <div class="nome">Empresa Pequena</div>
+      <div class="detalhe">até 4 pessoas · 6 GB</div>
+      <div class="preco">R$ 200<span>/mês</span></div>
+    </div>
+    <div class="faixa">
+      <div class="nome">Empresa Equipe</div>
+      <div class="detalhe">até 10 pessoas · 15 GB</div>
+      <div class="preco">R$ 400<span>/mês</span></div>
+    </div>
+  </div>
+  <p class="sub" style="margin-top:1rem;margin-bottom:0;font-style:italic">Mais de 10 pessoas na empresa? Fala com a gente.</p>
 </section>
 
 <section class="section">
