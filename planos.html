@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SafraBook — Planos e valores</title>
-<meta name="description" content="Planos do SafraBook: gratuito, Proprietário e Prestador de Serviços. Valores em fase de validação.">
+<meta name="description" content="Diagnóstico de CAR, fotos georreferenciadas por talhão, relatórios em PDF e mais — veja o que cada plano do SafraBook inclui.">
 <link rel="icon" href="/favicon.png" type="image/png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -75,9 +75,13 @@
   }
   .plano-gratuito .nome { font-weight: 800; font-size: 1.1rem; }
   .plano-gratuito .preco { font-size: 1.5rem; font-weight: 900; color: var(--green); margin: 0.35rem 0 0.9rem; }
-  .beneficios { list-style: none; display: flex; flex-direction: column; gap: 0.4rem; }
-  .beneficios li { font-size: 0.9rem; color: var(--dark); }
+  .beneficios { list-style: none; display: flex; flex-direction: column; gap: 0.65rem; }
+  .beneficios li { font-size: 0.9375rem; color: var(--dark); font-weight: 700; }
   .beneficios li::before { content: '✓ '; color: var(--green); font-weight: 700; }
+  .beneficios li .desc {
+    display: block; color: var(--gray); font-size: 0.84rem; font-weight: 400;
+    margin: 0.15rem 0 0 1.25rem; line-height: 1.5;
+  }
 
   .faixas { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1.1rem; margin-top: 1.1rem; }
   .faixa {
@@ -136,10 +140,12 @@
     <div class="nome">Plano Gratuito</div>
     <div class="preco">R$ 0</div>
     <ul class="beneficios">
-      <li>Cadastro de propriedade pelo CAR</li>
-      <li>Fotos com GPS</li>
-      <li>Mapa com verificação automática do CAR e Ibama</li>
-      <li>4 relatórios por mês</li>
+      <li>Diagnóstico automático de CAR<span class="desc">Informe o número do CAR e a propriedade aparece delimitada no mapa, direto do SICAR — sem espera.</span></li>
+      <li>Fotos georreferenciadas por talhão<span class="desc">Cada foto marca sozinha o talhão exato onde foi tirada. Funciona offline.</span></li>
+      <li>Acompanhamento ano a ano<span class="desc">Filtre o histórico de um mesmo talhão por período e veja a evolução com seus próprios olhos.</span></li>
+      <li>Clima em tempo real<span class="desc">Temperatura, umidade e condição do tempo direto da localização da sua fazenda.</span></li>
+      <li>4 relatórios de fotos em PDF por mês<span class="desc">Monte um relatório com as fotos que escolher, pronto pra enviar.</span></li>
+      <li>Até 3 anúncios ativos no Mercado<span class="desc">Compre e venda direto com outros produtores da comunidade.</span></li>
       <li>1 GB de espaço de armazenamento</li>
     </ul>
   </div>
@@ -148,11 +154,12 @@
 <section class="section">
   <h2>🧑‍🌾 Plano Proprietário</h2>
   <p class="sub">Pra quem cuida da própria fazenda — faixa por número de pessoas com acesso (você + sócios + funcionários)</p>
+  <p class="sub" style="margin-bottom:0.75rem;font-style:italic">Tudo do plano Gratuito, mais:</p>
   <ul class="beneficios" style="margin-bottom:0.5rem">
-    <li>Central de documentos da fazenda</li>
-    <li>Verificação de titularidade prioritária</li>
-    <li>Relatórios ilimitados</li>
-    <li>Anúncios ilimitados pra vendas</li>
+    <li>Central de documentos da fazenda<span class="desc">Recibo do CAR, matrícula, CCIR, ITR e contratos guardados num só lugar, com acesso controlado por sócio ou funcionário.</span></li>
+    <li>Verificação de titularidade prioritária<span class="desc">Sua fazenda entra na frente da fila de conferência de documentos.</span></li>
+    <li>Relatórios de fotos ilimitados<span class="desc">Sem limite de PDF por mês, pra quantos talhões precisar.</span></li>
+    <li>Anúncios ilimitados no Mercado</li>
   </ul>
   <div class="faixas">
     <div class="faixa">
@@ -178,13 +185,14 @@
 <section class="section">
   <h2>🔧 Plano Prestador de Serviços</h2>
   <p class="sub">Pra consultor, agrônomo, corretor ou banco acompanhando fazendas de terceiros — faixa por número de fazendas monitoradas</p>
+  <p class="sub" style="margin-bottom:0.75rem;font-style:italic">Tudo do plano Gratuito, mais:</p>
   <ul class="beneficios" style="margin-bottom:0.5rem">
-    <li>Central de documentos da fazenda</li>
+    <li>Diagnóstico de CAR pra cada cliente novo<span class="desc">Cadastre a fazenda do cliente pelo CAR antes mesmo dele ter conta — leva pro talhão dele em segundos.</span></li>
+    <li>Central de documentos por fazenda<span class="desc">Recibo do CAR, matrícula, CCIR, ITR e contratos organizados por propriedade monitorada.</span></li>
     <li>Verificação de titularidade prioritária</li>
-    <li>Relatórios ilimitados</li>
-    <li>Anúncios ilimitados pra vendas</li>
-    <li>Consulta de CAR pra novas fazendas</li>
-    <li>Selo de profissional verificado</li>
+    <li>Relatórios de fotos ilimitados<span class="desc">Um relatório em PDF por visita, por talhão, pra cada cliente.</span></li>
+    <li>Anúncios ilimitados no Mercado</li>
+    <li>Selo de profissional verificado<span class="desc">Aparece no seu perfil público, dá mais confiança pra quem for te contratar.</span></li>
   </ul>
   <div class="faixas">
     <div class="faixa">
@@ -209,10 +217,10 @@
   <h2>🏢 Plano Empresa</h2>
   <p class="sub">Pra revenda, transportadora, cooperativa ou comércio do agro — faixa por número de pessoas com acesso (dono + equipe)</p>
   <ul class="beneficios" style="margin-bottom:0.5rem">
-    <li>Perfil de empresa com CNPJ verificado automático</li>
-    <li>Equipe com papel de Gerente ou Funcionário</li>
-    <li>Fotos da equipe reunidas no mapa</li>
-    <li>Anúncios ilimitados pra vendas</li>
+    <li>Perfil de empresa com CNPJ verificado<span class="desc">Verificação automática direto na Receita Federal, sem fila — o selo aparece assim que a empresa entra ativa.</span></li>
+    <li>Equipe com papel de Gerente ou Funcionário<span class="desc">Gerente acompanha as fotos georreferenciadas de toda a equipe no mapa; funcionário vê só as próprias.</span></li>
+    <li>Relatórios de fotos ilimitados em PDF</li>
+    <li>Anúncios ilimitados no Mercado</li>
   </ul>
   <div class="faixas">
     <div class="faixa">
