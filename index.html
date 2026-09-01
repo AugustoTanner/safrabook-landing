@@ -379,6 +379,32 @@
     .galeria-phone img { display: block; width: 100%; height: auto; }
     .galeria-item p { font-size: 0.85rem; color: var(--gray); line-height: 1.5; }
 
+    /* ── RELATÓRIO ── */
+    .relatorio {
+      background: var(--bg);
+      padding: 4.5rem 2rem;
+    }
+    .relatorio-inner {
+      max-width: 900px; margin: 0 auto; display: grid;
+      grid-template-columns: 1.1fr 1fr; gap: 3rem; align-items: center;
+    }
+    .relatorio-texto p.section-label { text-align: left; }
+    .relatorio-texto h2 { text-align: left; margin-bottom: 1rem; }
+    .relatorio-texto .desc { color: var(--gray); font-size: 1rem; line-height: 1.7; margin-bottom: 1.5rem; }
+    .relatorio-lista { list-style: none; display: flex; flex-direction: column; gap: 0.6rem; }
+    .relatorio-lista li { font-size: 0.9375rem; color: var(--dark); }
+    .relatorio-lista li::before { content: '✓ '; color: var(--green); font-weight: 700; }
+    .relatorio-img-wrap {
+      background: var(--white); border-radius: 12px; padding: 8px;
+      box-shadow: 0 24px 60px rgba(0,60,30,0.16); transform: rotate(1.2deg);
+    }
+    .relatorio-img-wrap img { display: block; width: 100%; border-radius: 6px; }
+    @media (max-width: 760px) {
+      .relatorio-inner { grid-template-columns: 1fr; gap: 2rem; }
+      .relatorio-texto p.section-label, .relatorio-texto h2 { text-align: center; }
+      .relatorio-img-wrap { transform: none; }
+    }
+
     /* ── HOW IT WORKS ── */
     .how {
       background: var(--blue);
@@ -752,6 +778,30 @@
         <div class="galeria-phone"><img src="/img/screenshot-cepea.jpg" alt="Preços CEPEA por região no SafraBook" loading="lazy"></div>
         <p>Preço por região, sem sair do app</p>
       </div>
+    </div>
+  </div>
+</section>
+
+<!-- RELATÓRIO -->
+<section class="relatorio">
+  <div class="relatorio-inner">
+    <div class="relatorio-texto">
+      <p class="section-label">Relatório de verdade</p>
+      <h2>Um clique, e sua fazenda vira relatório</h2>
+      <p class="desc">
+        Esse é um relatório real, gerado pelo SafraBook a partir de fotos
+        tiradas na Fazenda Santana do Arvoredo. Escolha as fotos, escreva
+        uma observação e pronto — PDF na mão pra enviar pro cliente, pro
+        banco ou guardar no seu histórico.
+      </p>
+      <ul class="relatorio-lista">
+        <li>Fotos georreferenciadas, com data e talhão</li>
+        <li>Observações em texto livre</li>
+        <li>Pronto em segundos, direto do celular</li>
+      </ul>
+    </div>
+    <div class="relatorio-img-wrap">
+      <img src="/img/relatorio-exemplo.jpg" alt="Exemplo real de relatório de fotos gerado pelo SafraBook" loading="lazy">
     </div>
   </div>
 </section>
