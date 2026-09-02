@@ -161,6 +161,28 @@
     }
     .safra-badge-var { font-weight: 500; margin-left: 0.2rem; }
 
+    /* ── MEU ESTADO ── */
+    .estado-select-wrap { display: flex; align-items: center; gap: 0.6rem; margin-bottom: 1.1rem; flex-wrap: wrap; }
+    .estado-select-label { font-size: 0.82rem; font-weight: 700; color: var(--dark); }
+    .estado-dropdown {
+      appearance: none; -webkit-appearance: none; background: var(--white);
+      border: 1.5px solid rgba(0,0,0,0.1); padding: 0.5rem 2rem 0.5rem 1rem;
+      border-radius: 100px; font-size: 0.85rem; font-weight: 700; font-family: inherit;
+      color: var(--green); cursor: pointer;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23006B3C'/%3E%3C/svg%3E");
+      background-repeat: no-repeat; background-position: right 0.9rem center;
+    }
+    .estado-callout {
+      background: linear-gradient(135deg, rgba(0,107,60,0.07), rgba(255,204,0,0.08));
+      border: 1px solid rgba(0,107,60,0.15); border-radius: 14px;
+      padding: 1.1rem 1.35rem; margin-bottom: 1.25rem; font-size: 0.95rem; color: var(--dark);
+      display: none;
+    }
+    .estado-callout b { color: var(--green); }
+    .uf-linha.minha { background: rgba(255,204,0,0.14) !important; }
+    .uf-linha.minha .uf-col-uf { color: var(--green); }
+    .uf-linha.minha .barra-fill { background: var(--yellow2); }
+
     .uf-tabela { background: var(--white); border-radius: 14px; overflow: hidden; border: 1px solid rgba(0,0,0,0.06); margin-bottom: 0.75rem; }
     .ver-mais-btn {
       display: block; margin: 0 auto 2rem; background: none; border: 1.5px solid rgba(0,0,0,0.1);
@@ -312,6 +334,13 @@
       <select class="produto-dropdown" id="produtoDropdown"></select>
     </div>
   </div>
+  <div class="estado-select-wrap">
+    <span class="estado-select-label">📍 Comparar com meu estado:</span>
+    <select class="estado-dropdown" id="estadoSelect">
+      <option value="">Selecione a UF...</option>
+    </select>
+  </div>
+  <div class="estado-callout" id="estadoCallout"></div>
   <div id="safraConteudo"></div>
 </section>
 
@@ -493,6 +522,29 @@ const NOME_PRODUTO = {
   cana: 'Cana-de-açúcar', cana_area_total: 'Cana (área total)',
 };
 
+const NOME_UF = {
+  AC:'Acre', AL:'Alagoas', AP:'Amapá', AM:'Amazonas', BA:'Bahia', CE:'Ceará',
+  DF:'Distrito Federal', ES:'Espírito Santo', GO:'Goiás', MA:'Maranhão',
+  MT:'Mato Grosso', MS:'Mato Grosso do Sul', MG:'Minas Gerais', PA:'Pará',
+  PB:'Paraíba', PR:'Paraná', PE:'Pernambuco', PI:'Piauí', RJ:'Rio de Janeiro',
+  RN:'Rio Grande do Norte', RS:'Rio Grande do Sul', RO:'Rondônia', RR:'Roraima',
+  SC:'Santa Catarina', SP:'São Paulo', SE:'Sergipe', TO:'Tocantins',
+};
+let meuEstado = localStorage.getItem('sb_meu_estado') || '';
+
+function popularSeletorEstado() {
+  const sel = document.getElementById('estadoSelect');
+  const ufsOrdenadas = Object.keys(NOME_UF).sort((a, b) => NOME_UF[a].localeCompare(NOME_UF[b]));
+  sel.innerHTML = '<option value="">Selecione a UF...</option>' +
+    ufsOrdenadas.map(uf => `<option value="${uf}">${NOME_UF[uf]}</option>`).join('');
+  sel.value = meuEstado;
+  sel.addEventListener('change', () => {
+    meuEstado = sel.value;
+    localStorage.setItem('sb_meu_estado', meuEstado);
+    if (produtoAtivo) selecionarProduto(produtoAtivo);
+  });
+}
+
 let safrasCache = {}; // produto -> linhas
 let produtoAtivo = null;
 
@@ -620,7 +672,7 @@ async function selecionarProduto(produto) {
     const anteriorValor = producaoAnteriorPorUf[l.uf];
     const variacaoUf = anteriorValor ? ((l.producao_mil_ton - anteriorValor) / anteriorValor) * 100 : null;
     return `
-      <div class="uf-linha">
+      <div class="uf-linha${l.uf === meuEstado ? ' minha' : ''}">
         <div class="uf-col-uf">${l.uf}</div>
         <div class="uf-col-barra"><div class="barra-bg"><div class="barra-fill" style="width:${(l.producao_mil_ton / maxProducao * 100).toFixed(1)}%"></div></div></div>
         <div class="uf-col-num">${fmt(l.producao_mil_ton, 0)}</div>
@@ -628,8 +680,28 @@ async function selecionarProduto(produto) {
       </div>
     `;
   }
-  const estadosVisiveis = porEstado.slice(0, QTD_VISIVEL);
-  const estadosOcultos = porEstado.slice(QTD_VISIVEL);
+  const idxMeuEstado = meuEstado ? porEstado.findIndex(l => l.uf === meuEstado) : -1;
+  // Se o estado escolhido não entra no top visível, adianta o corte pra
+  // sempre incluir a linha dele — senão o destaque fica escondido atrás
+  // do "ver mais" e ninguém percebe que existe.
+  const qtdComMeuEstado = idxMeuEstado >= QTD_VISIVEL ? idxMeuEstado + 1 : QTD_VISIVEL;
+  const estadosVisiveis = porEstado.slice(0, qtdComMeuEstado);
+  const estadosOcultos = porEstado.slice(qtdComMeuEstado);
+
+  let calloutHtml = '';
+  if (idxMeuEstado >= 0) {
+    const linhaMeuEstado = porEstado[idxMeuEstado];
+    const pctNacional = (linhaMeuEstado.producao_mil_ton / porEstado.reduce((s, l) => s + l.producao_mil_ton, 0)) * 100;
+    const anteriorValor = producaoAnteriorPorUf[meuEstado];
+    const variacaoUf = anteriorValor ? ((linhaMeuEstado.producao_mil_ton - anteriorValor) / anteriorValor) * 100 : null;
+    calloutHtml = `
+      <b>${NOME_UF[meuEstado]}</b> é o <b>${idxMeuEstado + 1}º maior produtor</b> de ${NOME_PRODUTO[produto].toLowerCase()} do país
+      nessa safra — ${fmt(linhaMeuEstado.producao_mil_ton, 0)} mil ton, ${pctNacional.toFixed(1)}% da produção nacional
+      ${variacaoUf !== null ? `, ${variacaoUf >= 0 ? 'alta' : 'queda'} de ${Math.abs(variacaoUf).toFixed(1)}% vs ${safraAnterior}` : ''}.
+    `;
+  } else if (meuEstado) {
+    calloutHtml = `Sem produção registrada de ${NOME_PRODUTO[produto].toLowerCase()} em <b>${NOME_UF[meuEstado]}</b> nessa safra.`;
+  }
 
   conteudo.innerHTML = `
     <div class="safra-badge">
@@ -675,6 +747,10 @@ async function selecionarProduto(produto) {
       btnVerMais.textContent = aberto ? `Ver mais ${estadosOcultos.length} estados ▾` : 'Ver menos ▴';
     });
   }
+
+  const elCallout = document.getElementById('estadoCallout');
+  elCallout.innerHTML = calloutHtml;
+  elCallout.style.display = calloutHtml ? 'block' : 'none';
 
   desenharLinhaSimples('chartProdutividade', anos, anos.map(a => produtividadePorAno[a]), v => `${fmt(v, 0)} kg/ha`);
   if (temPreco) desenharPrecoChart('chartPreco', categoriasPreco, precoPorSafra);
@@ -833,6 +909,7 @@ carregarCambio();
 carregarChicago();
 carregarCepea();
 carregarProdutosDisponiveis();
+popularSeletorEstado();
 </script>
 
 </body>
