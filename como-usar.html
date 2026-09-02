@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SafraBook — Como usar</title>
+  <meta name="description" content="Veja passo a passo como cadastrar sua fazenda, tirar fotos com GPS, acompanhar preços e gerar relatórios no SafraBook — pelo celular ou pelo computador.">
+  <link rel="icon" href="/favicon.png" type="image/png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --green:  #006B3C;
+      --green2: #004D2C;
+      --yellow: #FFCC00;
+      --yellow2:#E6B800;
+      --blue:   #003087;
+      --blue2:  #001D5C;
+      --dark:   #1A1A1A;
+      --gray:   #5A6473;
+      --bg:     #F5F3EE;
+      --white:  #FFFFFF;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--dark);
+      line-height: 1.6;
+    }
+
+    /* ── NAV ── */
+    nav {
+      background: var(--green2);
+      padding: 0.9rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      border-bottom: 3px solid var(--yellow);
+    }
+    .logo { color: var(--white); font-size: 1.5rem; font-weight: 900; letter-spacing: -0.5px; text-decoration: none; }
+    .logo span { color: var(--yellow); }
+    .nav-btn {
+      background: var(--yellow); color: var(--dark); padding: 0.5rem 1.25rem;
+      border-radius: 8px; font-weight: 700; font-size: 0.875rem; text-decoration: none;
+      transition: background 0.2s;
+    }
+    .nav-btn:hover { background: var(--yellow2); }
+    .nav-btn-ghost { background: transparent; color: var(--white); border: 1.5px solid rgba(255,255,255,0.35); }
+    .nav-btn-ghost:hover { background: rgba(255,255,255,0.1); }
+    .nav-btn-ghost.ativo { background: rgba(255,255,255,0.12); border-color: var(--yellow); color: var(--yellow); }
+
+    /* ── HERO ── */
+    .hero {
+      background: var(--green2); color: var(--white);
+      padding: 4rem 2rem 4.5rem; text-align: center;
+    }
+    .hero-badge {
+      display: inline-flex; align-items: center; gap: 0.4rem;
+      background: rgba(255,204,0,0.15); border: 1px solid rgba(255,204,0,0.4); color: var(--yellow);
+      padding: 0.35rem 1rem; border-radius: 100px; font-size: 0.78rem; font-weight: 700;
+      letter-spacing: 0.8px; text-transform: uppercase; margin-bottom: 1.5rem;
+    }
+    .hero h1 {
+      font-size: clamp(2rem, 4.5vw, 3.25rem); font-weight: 900; line-height: 1.1;
+      letter-spacing: -1.5px; margin-bottom: 1.1rem;
+    }
+    .hero h1 .yl { color: var(--yellow); }
+    .hero p {
+      font-size: 1.05rem; color: rgba(255,255,255,0.72); max-width: 560px;
+      margin: 0 auto 2rem; line-height: 1.7;
+    }
+    .cta-btns { display: flex; gap: 0.9rem; justify-content: center; flex-wrap: wrap; }
+    .btn-cta, .btn-cta-outline {
+      display: inline-block; padding: 0.9rem 1.9rem; border-radius: 10px; font-size: 1rem;
+      font-weight: 800; text-decoration: none; font-family: 'Inter', sans-serif;
+      transition: background 0.2s, transform 0.1s, border-color 0.2s;
+    }
+    .btn-cta { background: var(--yellow); color: var(--dark); }
+    .btn-cta:hover { background: var(--yellow2); }
+    .btn-cta:active { transform: scale(0.98); }
+    .btn-cta-outline { background: transparent; color: var(--white); border: 1.5px solid rgba(255,255,255,0.3); }
+    .btn-cta-outline:hover { border-color: var(--yellow); color: var(--yellow); }
+
+    /* ── PASSOS ── */
+    .passos { padding: 5rem 2rem; max-width: 1080px; margin: 0 auto; }
+    .section-label {
+      text-align: center; font-size: 0.75rem; font-weight: 800; text-transform: uppercase;
+      letter-spacing: 1.5px; color: var(--green); margin-bottom: 0.6rem;
+    }
+    .passos > h2, .vantagens h2, .modos h2 {
+      text-align: center; font-size: clamp(1.6rem, 3vw, 2.25rem); font-weight: 900;
+      letter-spacing: -0.75px; margin-bottom: 3.5rem; text-wrap: balance;
+    }
+
+    .passo {
+      display: grid; grid-template-columns: 0.85fr 1.15fr; gap: 3rem; align-items: center;
+      margin-bottom: 5.5rem;
+    }
+    .passo:last-child { margin-bottom: 0; }
+    .passo.inverso { grid-template-columns: 1.15fr 0.85fr; }
+    .passo.inverso .passo-shot { order: 2; }
+    .passo.inverso .passo-texto { order: 1; }
+
+    .passo-num {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 40px; height: 40px; background: var(--yellow); color: var(--dark);
+      border-radius: 50%; font-weight: 900; font-size: 1.1rem; margin-bottom: 1rem;
+    }
+    .passo-texto h3 { font-size: 1.5rem; font-weight: 800; letter-spacing: -0.5px; margin-bottom: 0.75rem; }
+    .passo-texto p { color: var(--gray); font-size: 1rem; line-height: 1.75; margin-bottom: 1rem; }
+    .passo-detalhe {
+      display: flex; align-items: flex-start; gap: 0.6rem; font-size: 0.9rem;
+      color: var(--dark); margin-top: 0.9rem;
+    }
+    .passo-detalhe .dot {
+      flex-shrink: 0; width: 20px; height: 20px; border-radius: 50%; background: var(--green);
+      color: var(--white); font-size: 0.72rem; font-weight: 800; display: flex;
+      align-items: center; justify-content: center; margin-top: 1px;
+    }
+
+    .passo-shot {
+      position: relative; justify-self: center; width: 100%; max-width: 280px;
+    }
+    .passo-shot.doc { max-width: 380px; }
+    .shot-frame {
+      position: relative; border-radius: 22px; overflow: hidden;
+      border: 6px solid var(--dark); box-shadow: 0 24px 60px rgba(0,60,30,0.18);
+    }
+    .passo-shot.doc .shot-frame { border-radius: 10px; border-width: 1px; border-color: rgba(0,0,0,0.1); }
+    .shot-frame img { display: block; width: 100%; }
+    .shot-svg { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+    .shot-tag {
+      position: absolute; background: var(--yellow); color: var(--dark);
+      font-weight: 800; font-size: 0.72rem; padding: 0.35rem 0.65rem; border-radius: 7px;
+      box-shadow: 0 6px 16px rgba(0,0,0,0.25); white-space: nowrap; transform: translate(-50%, -100%);
+    }
+
+    /* ── MODOS (app / web) ── */
+    .modos { background: var(--white); padding: 4.5rem 2rem; }
+    .modos-inner { max-width: 900px; margin: 0 auto; }
+    .modos-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1.5rem;
+    }
+    .modo-card {
+      background: var(--bg); border-radius: 16px; padding: 2rem; border: 1px solid rgba(0,0,0,0.06);
+    }
+    .modo-icon { font-size: 2.25rem; margin-bottom: 0.9rem; display: block; }
+    .modo-card h3 { font-size: 1.15rem; font-weight: 800; margin-bottom: 0.6rem; }
+    .modo-card p { color: var(--gray); font-size: 0.9375rem; line-height: 1.65; }
+    .modo-sync {
+      text-align: center; margin-top: 2rem; font-size: 0.9rem; color: var(--green);
+      font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 0.5rem;
+    }
+
+    /* ── VANTAGENS ── */
+    .vantagens { padding: 5rem 2rem; max-width: 1080px; margin: 0 auto; }
+    .vant-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.25rem; }
+    .vant-card {
+      background: var(--white); border-radius: 16px; padding: 1.6rem 1.75rem;
+      border: 1px solid rgba(0,0,0,0.06); border-left: 4px solid var(--green);
+    }
+    .vant-card.yellow { border-left-color: var(--yellow2); }
+    .vant-card.blue { border-left-color: var(--blue); }
+    .vant-antes { font-size: 0.8rem; color: #B54708; font-weight: 700; margin-bottom: 0.4rem; }
+    .vant-antes::before { content: '✕ '; }
+    .vant-depois { font-size: 0.95rem; font-weight: 800; margin-bottom: 0.4rem; }
+    .vant-depois::before { content: '✓ '; color: var(--green); }
+    .vant-card p.desc { color: var(--gray); font-size: 0.85rem; line-height: 1.6; }
+
+    /* ── CTA BOTTOM ── */
+    .cta { padding: 5.5rem 2rem; text-align: center; }
+    .cta h2 { font-size: clamp(1.75rem, 3vw, 2.5rem); font-weight: 900; letter-spacing: -0.75px; margin-bottom: 0.75rem; }
+    .cta h2 span { color: var(--green); }
+    .cta p { color: var(--gray); font-size: 1.05rem; margin-bottom: 2.25rem; }
+
+    /* ── FOOTER ── */
+    footer {
+      background: var(--green2); border-top: 3px solid var(--yellow); color: rgba(255,255,255,0.5);
+      text-align: center; padding: 2.5rem 2rem; font-size: 0.85rem; line-height: 2;
+    }
+    footer strong { color: var(--white); }
+    footer a { color: var(--yellow); text-decoration: none; }
+
+    @media (max-width: 640px) {
+      nav { flex-wrap: wrap; row-gap: 0.6rem; padding: 0.9rem 1.25rem; }
+      nav > div { flex-wrap: wrap; justify-content: center; gap: 0.5rem; }
+      .nav-btn, .nav-btn-ghost { padding: 0.4rem 0.85rem; font-size: 0.8rem; }
+    }
+    @media (max-width: 760px) {
+      .passo, .passo.inverso { grid-template-columns: 1fr; gap: 1.75rem; }
+      .passo.inverso .passo-shot, .passo.inverso .passo-texto { order: initial; }
+      .passo-texto { text-align: center; }
+      .passo-detalhe { text-align: left; }
+      .passo-shot { max-width: 240px; }
+      .passo-shot.doc { max-width: 100%; }
+      .passos { padding: 3.5rem 1.25rem; }
+      .modos, .vantagens { padding: 3.5rem 1.25rem; }
+    }
+  </style>
+  <!-- Vercel Analytics -->
+  <script defer src="/_vercel/insights/script.js"></script>
+</head>
+<body>
+
+<nav>
+  <a href="/index.html" class="logo">Safra<span>Book</span></a>
+  <div style="display:flex;align-items:center;gap:1.25rem">
+    <a href="/como-usar.html" class="nav-btn nav-btn-ghost ativo">Como usar</a>
+    <a href="/planos.html" class="nav-btn nav-btn-ghost">Planos</a>
+    <a href="/dados.html" class="nav-btn nav-btn-ghost">Dados do agro</a>
+    <a href="https://app.safrabook.com.br/login" class="nav-btn">Entrar</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-badge">Passo a passo · leva 2 minutos</div>
+  <h1>Do jeito que você já<br><span class="yl">usa o celular.</span></h1>
+  <p>Sem curso, sem manual grosso. Veja exatamente como cadastrar sua fazenda, tirar fotos com GPS e gerar relatório — com telas reais do SafraBook, do jeito que ele é hoje.</p>
+  <div class="cta-btns">
+    <a href="https://app.safrabook.com.br/cadastro" class="btn-cta">Criar conta grátis</a>
+    <a href="https://app.safrabook.com.br/login" class="btn-cta-outline">Já tenho conta → Entrar</a>
+  </div>
+</section>
+
+<!-- PASSOS -->
+<section class="passos">
+  <p class="section-label">Passo a passo</p>
+  <h2>Quatro telas, e sua fazenda<br>já está funcionando</h2>
+
+  <!-- PASSO 1: MAPA -->
+  <div class="passo">
+    <div class="passo-shot">
+      <div class="shot-frame">
+        <img src="/img/screenshot-mapa.jpg" alt="Mapa da fazenda no SafraBook, com fazendas cadastradas e fotos geolocalizadas">
+        <svg class="shot-svg" viewBox="0 0 100 100" preserveAspectRatio="none">
+          <defs>
+            <marker id="arrow1a" markerWidth="7" markerHeight="7" refX="5.5" refY="3.5" orient="auto">
+              <path d="M0,0 L7,3.5 L0,7 Z" fill="#FFCC00"/>
+            </marker>
+            <marker id="arrow1b" markerWidth="7" markerHeight="7" refX="5.5" refY="3.5" orient="auto">
+              <path d="M0,0 L7,3.5 L0,7 Z" fill="#FFCC00"/>
+            </marker>
+          </defs>
+          <path d="M 24 8 Q 24 12 24 15.5" fill="none" stroke="#FFCC00" stroke-width="1.4" marker-end="url(#arrow1a)"/>
+          <path d="M 58 30 Q 61 42 62 53" fill="none" stroke="#FFCC00" stroke-width="1.4" marker-end="url(#arrow1b)"/>
+        </svg>
+        <div class="shot-tag" style="top:7%; left:24%">CAR verificado</div>
+        <div class="shot-tag" style="top:23%; left:58%">Fotos no lugar certo</div>
+      </div>
+    </div>
+    <div class="passo-texto">
+      <div class="passo-num">1</div>
+      <h3>Cadastre com o número do CAR</h3>
+      <p>Informe o CAR da fazenda e ela aparece delimitada no mapa sozinha — direto do SICAR, sem desenhar nada na mão.</p>
+      <div class="passo-detalhe"><span class="dot">✓</span> Cada foto tirada aparece exatamente no ponto do mapa onde foi feita</div>
+      <div class="passo-detalhe"><span class="dot">✓</span> Várias fazendas? Troca entre elas com um toque, no topo da tela</div>
+    </div>
+  </div>
+
+  <!-- PASSO 2: CAMERA -->
+  <div class="passo inverso">
+    <div class="passo-shot">
+      <div class="shot-frame">
+        <img src="/img/screenshot-camera-gps.jpg" alt="Tela de câmera do SafraBook com GPS de alta precisão">
+        <svg class="shot-svg" viewBox="0 0 100 100" preserveAspectRatio="none">
+          <defs>
+            <marker id="arrow2" markerWidth="7" markerHeight="7" refX="5.5" refY="3.5" orient="auto">
+              <path d="M0,0 L7,3.5 L0,7 Z" fill="#FFCC00"/>
+            </marker>
+          </defs>
+          <path d="M 74 41 Q 66 46 60 48" fill="none" stroke="#FFCC00" stroke-width="1.4" marker-end="url(#arrow2)"/>
+        </svg>
+        <div class="shot-tag" style="top:35%; left:74%">Toque e tire a foto</div>
+      </div>
+    </div>
+    <div class="passo-texto">
+      <div class="passo-num">2</div>
+      <h3>Tire a foto direto no talhão</h3>
+      <p>GPS de alta precisão — muito mais exato que a câmera comum do celular. E funciona mesmo sem sinal: a foto fica guardada e sobe sozinha quando a internet voltar.</p>
+      <div class="passo-detalhe"><span class="dot">✓</span> Também dá pra importar foto já tirada, direto da galeria</div>
+      <div class="passo-detalhe"><span class="dot">✓</span> Sem GPS, a foto não se perde: fica separada em "Sem localização"</div>
+    </div>
+  </div>
+
+  <!-- PASSO 3: PREÇOS -->
+  <div class="passo">
+    <div class="passo-shot">
+      <div class="shot-frame">
+        <img src="/img/screenshot-cambio.jpg" alt="Cotações de câmbio, Chicago e CEPEA em tempo real no SafraBook">
+        <svg class="shot-svg" viewBox="0 0 100 100" preserveAspectRatio="none">
+          <defs>
+            <marker id="arrow3a" markerWidth="7" markerHeight="7" refX="5.5" refY="3.5" orient="auto">
+              <path d="M0,0 L7,3.5 L0,7 Z" fill="#FFCC00"/>
+            </marker>
+            <marker id="arrow3b" markerWidth="7" markerHeight="7" refX="5.5" refY="3.5" orient="auto">
+              <path d="M0,0 L7,3.5 L0,7 Z" fill="#FFCC00"/>
+            </marker>
+          </defs>
+          <path d="M 54 13 Q 66 15 77 17" fill="none" stroke="#FFCC00" stroke-width="1.4" marker-end="url(#arrow3a)"/>
+          <path d="M 50 90 Q 50 84 50 78" fill="none" stroke="#FFCC00" stroke-width="1.4" marker-end="url(#arrow3b)"/>
+        </svg>
+        <div class="shot-tag" style="top:6%; left:54%">Câmbio, Chicago, CEPEA</div>
+        <div class="shot-tag" style="top:95%; left:50%">Aba Preços</div>
+      </div>
+    </div>
+    <div class="passo-texto">
+      <div class="passo-num">3</div>
+      <h3>Acompanhe preço sem sair do app</h3>
+      <p>Dólar, Euro, Yuan, futuros de Chicago e preço CEPEA por região — tudo atualizado todo dia, sem precisar abrir cinco abas diferentes.</p>
+      <div class="passo-detalhe"><span class="dot">✓</span> CEPEA por praça: compare o preço da sua região com o de outras</div>
+      <div class="passo-detalhe"><span class="dot">✓</span> Direto na aba "Preços", no menu de baixo</div>
+    </div>
+  </div>
+
+  <!-- PASSO 4: RELATORIO -->
+  <div class="passo inverso">
+    <div class="passo-shot doc">
+      <div class="shot-frame">
+        <img src="/img/relatorio-exemplo.jpg" alt="Relatório de fotos em PDF gerado pelo SafraBook, com observações e fotos georreferenciadas">
+        <svg class="shot-svg" viewBox="0 0 100 100" preserveAspectRatio="none">
+          <defs>
+            <marker id="arrow4" markerWidth="7" markerHeight="7" refX="5.5" refY="3.5" orient="auto">
+              <path d="M0,0 L7,3.5 L0,7 Z" fill="#FFCC00"/>
+            </marker>
+          </defs>
+          <path d="M 50 13 Q 50 18 50 22.5" fill="none" stroke="#FFCC00" stroke-width="1" marker-end="url(#arrow4)"/>
+        </svg>
+        <div class="shot-tag" style="top:13%; left:50%">Suas observações</div>
+      </div>
+    </div>
+    <div class="passo-texto">
+      <div class="passo-num">4</div>
+      <h3>Gere o relatório em segundos</h3>
+      <p>Escolha as fotos de um período ou talhão, escreva uma observação e pronto: PDF pronto pra mandar pro cliente, pro banco ou guardar no histórico da fazenda.</p>
+      <div class="passo-detalhe"><span class="dot">✓</span> Esse relatório acima é real — gerado a partir de fotos de uma fazenda de verdade</div>
+      <div class="passo-detalhe"><span class="dot">✓</span> Fica salvo no histórico, visível pra toda a equipe</div>
+    </div>
+  </div>
+</section>
+
+<!-- MODOS -->
+<section class="modos">
+  <div class="modos-inner">
+    <p class="section-label">Pelo celular ou pelo computador</p>
+    <h2>Um só SafraBook, do jeito<br>que for melhor pra você</h2>
+    <div class="modos-grid">
+      <div class="modo-card">
+        <span class="modo-icon">📱</span>
+        <h3>App / celular</h3>
+        <p>Ideal pra quem está no campo: tira foto com GPS de alta precisão, mesmo sem sinal, e a foto sobe sozinha quando a internet voltar. Funciona pelo navegador do celular — sem precisar instalar nada.</p>
+      </div>
+      <div class="modo-card">
+        <span class="modo-icon">💻</span>
+        <h3>Computador / web</h3>
+        <p>Ideal pra escritório: acompanhe o mapa completo, monte relatórios com calma e veja preços numa tela maior. Acesse em <strong>app.safrabook.com.br</strong>, de qualquer navegador.</p>
+      </div>
+    </div>
+    <div class="modo-sync">🔄 Mesma conta, mesmos dados — o que você faz num aparelho aparece no outro na hora</div>
+  </div>
+</section>
+
+<!-- VANTAGENS -->
+<section class="vantagens">
+  <p class="section-label">Por que vale a pena</p>
+  <h2>Troque isso...</h2>
+  <div class="vant-grid">
+    <div class="vant-card">
+      <div class="vant-antes">Foto perdida no WhatsApp, sem saber de qual talhão era</div>
+      <div class="vant-depois">Fotos no talhão certo, sozinhas</div>
+      <p class="desc">O GPS grava a localização exata na hora da foto — nunca mais precisa lembrar onde foi tirada.</p>
+    </div>
+    <div class="vant-card yellow">
+      <div class="vant-antes">Montar relatório no Word ou Excel, foto por foto</div>
+      <div class="vant-depois">Relatório em PDF, em segundos</div>
+      <p class="desc">Escolhe as fotos, escreve a observação e já sai pronto pra mandar pro cliente ou pro banco.</p>
+    </div>
+    <div class="vant-card blue">
+      <div class="vant-antes">Abrir 5 sites diferentes pra ver câmbio, Chicago e CEPEA</div>
+      <div class="vant-depois">Tudo num lugar só, todo dia</div>
+      <p class="desc">Cotações atualizadas automaticamente, direto na tela inicial do app.</p>
+    </div>
+    <div class="vant-card">
+      <div class="vant-antes">Cada funcionário salva foto de um jeito, em lugar nenhum</div>
+      <div class="vant-depois">Equipe inteira, num histórico só</div>
+      <p class="desc">O gestor vê as fotos de toda a equipe no mesmo mapa, sabendo sempre quem tirou o quê.</p>
+    </div>
+  </div>
+</section>
+
+<!-- CTA BOTTOM -->
+<section class="cta">
+  <h2>Chega de complicar.<br><span>Comece agora, de graça.</span></h2>
+  <p>Cadastre sua fazenda, tire a primeira foto e veja no mapa em menos de 2 minutos.</p>
+  <div class="cta-btns" style="justify-content:center">
+    <a href="https://app.safrabook.com.br/cadastro" class="btn-cta">Criar conta grátis</a>
+    <a href="https://app.safrabook.com.br/login" class="btn-cta-outline" style="color:var(--dark);border-color:rgba(0,0,0,0.2)">Já tenho conta → Entrar</a>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <strong>SafraBook</strong> — O agro brasileiro no mapa<br>
+  <a href="https://safrabook.com.br">safrabook.com.br</a> ·
+  <a href="https://instagram.com/safrabook.agro">@safrabook.agro</a> ·
+  <a href="https://youtube.com/@safrabook">YouTube @safrabook</a><br>
+  safrabook.app@gmail.com
+</footer>
+
+</body>
+</html>
