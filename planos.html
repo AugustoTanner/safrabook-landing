@@ -99,6 +99,20 @@
   .faixa .preco { font-size: 1.5rem; font-weight: 900; color: var(--dark); }
   .faixa .preco span { font-size: 0.8rem; font-weight: 600; color: var(--gray); }
 
+  .badge-teste {
+    display: inline-block; background: rgba(255,204,0,0.18); color: #92600A;
+    font-size: 0.7rem; font-weight: 800; letter-spacing: 0.3px;
+    padding: 0.25rem 0.65rem; border-radius: 20px; vertical-align: middle;
+    margin-left: 0.5rem;
+  }
+  .beneficios-topico {
+    list-style: none; display: flex; flex-direction: column; gap: 0.5rem;
+    background: var(--white); border-radius: 14px; padding: 1.25rem 1.5rem;
+    border: 1px solid rgba(0,0,0,0.06);
+  }
+  .beneficios-topico li { font-size: 0.9rem; color: var(--dark); font-weight: 600; }
+  .beneficios-topico li::before { content: '✓ '; color: var(--green); font-weight: 700; }
+
   .cta {
     text-align: center; padding: 3rem 2rem 4.5rem;
   }
@@ -135,9 +149,9 @@
 </nav>
 
 <section class="hero">
-  <h1>Planos e valores</h1>
-  <p>O app é e continua gratuito pra usar. Esses são os planos pra quem quer mais espaço e recursos pra gerenciar equipe e propriedades.</p>
-  <div class="aviso">⚠️ Valores ainda em fase de validação — podem mudar. Ativação hoje é manual, fala com a gente pra ativar.</div>
+  <h1>Planos</h1>
+  <p>O app é e continua gratuito pra usar. Os planos abaixo ainda estão em fase de testes — os recursos já dão uma ideia do que vem, mas valores e detalhes de cada faixa ainda não estão fechados.</p>
+  <div class="aviso">🧪 Planos pagos ainda em testes — sem preço definido por enquanto. Só o Gratuito está disponível pra ativar hoje.</div>
 </section>
 
 <section class="section">
@@ -159,113 +173,44 @@
 </section>
 
 <section class="section">
-  <h2>🧑‍🌾 Plano Proprietário</h2>
-  <p class="sub">Pra quem cuida da própria fazenda — faixa por número de pessoas com acesso (você + sócios + funcionários)</p>
-  <p class="sub" style="margin-bottom:0.75rem;font-style:italic">Tudo do plano Gratuito, mais:</p>
-  <ul class="beneficios" style="margin-bottom:0.5rem">
-    <li>Central de documentos da fazenda<span class="desc">Recibo do CAR, matrícula, CCIR, ITR e contratos guardados num só lugar, com acesso controlado por sócio ou funcionário.</span></li>
-    <li>Verificação de titularidade prioritária<span class="desc">Sua fazenda entra na frente da fila de conferência de documentos.</span></li>
-    <li>Relatórios de fotos ilimitados<span class="desc">Sem limite de PDF por mês, pra quantos talhões precisar.</span></li>
-    <li>Anúncios ilimitados no Mercado</li>
-  </ul>
-  <div class="faixas">
-    <div class="faixa">
-      <div class="nome">Proprietário Solo</div>
-      <div class="detalhe">até 1 pessoa · 3 GB</div>
-      <div class="preco">R$ 79<span>/mês</span></div>
-    </div>
-    <div class="faixa destaque">
-      <div class="selo">Mais escolhido</div>
-      <div class="nome">Proprietário Família</div>
-      <div class="detalhe">até 4 pessoas · 6 GB</div>
-      <div class="preco">R$ 200<span>/mês</span></div>
-    </div>
-    <div class="faixa">
-      <div class="nome">Proprietário Equipe</div>
-      <div class="detalhe">até 10 pessoas · 15 GB</div>
-      <div class="preco">R$ 400<span>/mês</span></div>
-    </div>
-  </div>
-  <p class="sub" style="margin-top:1rem;margin-bottom:0;font-style:italic">Mais de 10 pessoas na fazenda? Fala com a gente.</p>
-</section>
-
-<section class="section">
-  <h2>🔧 Plano Prestador de Serviços</h2>
-  <p class="sub">Pra consultor, agrônomo, corretor ou banco acompanhando fazendas de terceiros — faixa por número de fazendas monitoradas</p>
-  <p class="sub" style="margin-bottom:0.75rem;font-style:italic">Tudo do plano Gratuito, mais:</p>
-  <ul class="beneficios" style="margin-bottom:0.5rem">
-    <li>Diagnóstico de CAR pra cada cliente novo<span class="desc">Cadastre a fazenda do cliente pelo CAR antes mesmo dele ter conta — leva pro talhão dele em segundos.</span></li>
-    <li>Central de documentos por fazenda<span class="desc">Recibo do CAR, matrícula, CCIR, ITR e contratos organizados por propriedade monitorada.</span></li>
+  <h2>🧑‍🌾 Plano Proprietário <span class="badge-teste">🧪 Em testes</span></h2>
+  <p class="sub">Pra quem cuida da própria fazenda, com sócios e funcionários. Tudo do plano Gratuito, mais:</p>
+  <ul class="beneficios-topico">
+    <li>Central de documentos da fazenda</li>
     <li>Verificação de titularidade prioritária</li>
-    <li>Relatórios de fotos ilimitados<span class="desc">Um relatório em PDF por visita, por talhão, pra cada cliente.</span></li>
+    <li>Relatórios de fotos ilimitados</li>
     <li>Anúncios ilimitados no Mercado</li>
-    <li>Selo de profissional verificado<span class="desc">Aparece no seu perfil público, dá mais confiança pra quem for te contratar.</span></li>
   </ul>
-  <div class="faixas">
-    <div class="faixa">
-      <div class="nome">Prestador Starter</div>
-      <div class="detalhe">até 5 fazendas · até 3 pessoas por fazenda · 10 GB</div>
-      <div class="preco">R$ 250<span>/mês</span></div>
-    </div>
-    <div class="faixa">
-      <div class="nome">Prestador Pro</div>
-      <div class="detalhe">até 15 fazendas · até 3 pessoas por fazenda · 25 GB</div>
-      <div class="preco">R$ 600<span>/mês</span></div>
-    </div>
-    <div class="faixa">
-      <div class="nome">Prestador Corporativo</div>
-      <div class="detalhe">fazendas ilimitadas · equipe própria vinculada à empresa</div>
-      <div class="preco" style="font-size:1.15rem">Sob consulta</div>
-    </div>
-  </div>
 </section>
 
 <section class="section">
-  <h2>🏢 Plano Empresa</h2>
-  <p class="sub">Pra revenda, transportadora, cooperativa ou comércio do agro — faixa por número de pessoas com acesso (dono + equipe)</p>
-  <ul class="beneficios" style="margin-bottom:0.5rem">
-    <li>Perfil de empresa com CNPJ verificado<span class="desc">Verificação automática direto na Receita Federal, sem fila — o selo aparece assim que a empresa entra ativa.</span></li>
-    <li>Equipe com papel de Gerente ou Funcionário<span class="desc">Gerente acompanha as fotos georreferenciadas de toda a equipe no mapa; funcionário vê só as próprias.</span></li>
+  <h2>🔧 Plano Prestador de Serviços <span class="badge-teste">🧪 Em testes</span></h2>
+  <p class="sub">Pra consultor, agrônomo, corretor ou banco acompanhando fazendas de terceiros. Tudo do plano Gratuito, mais:</p>
+  <ul class="beneficios-topico">
+    <li>Diagnóstico de CAR pra cada cliente novo</li>
+    <li>Central de documentos por fazenda</li>
+    <li>Verificação de titularidade prioritária</li>
+    <li>Relatórios de fotos ilimitados</li>
+    <li>Anúncios ilimitados no Mercado</li>
+    <li>Selo de profissional verificado</li>
+  </ul>
+</section>
+
+<section class="section">
+  <h2>🏢 Plano Empresa <span class="badge-teste">🧪 Em testes</span></h2>
+  <p class="sub">Pra revenda, transportadora, cooperativa ou comércio do agro. Tudo do plano Gratuito, mais:</p>
+  <ul class="beneficios-topico">
+    <li>Perfil de empresa com CNPJ verificado</li>
+    <li>Equipe com papel de Gerente ou Funcionário</li>
     <li>Relatórios de fotos ilimitados em PDF</li>
     <li>Anúncios ilimitados no Mercado</li>
   </ul>
-  <div class="faixas">
-    <div class="faixa">
-      <div class="nome">Empresa Solo</div>
-      <div class="detalhe">até 1 pessoa · 3 GB</div>
-      <div class="preco">R$ 79<span>/mês</span></div>
-    </div>
-    <div class="faixa destaque">
-      <div class="selo">Mais escolhido</div>
-      <div class="nome">Empresa Pequena</div>
-      <div class="detalhe">até 4 pessoas · 6 GB</div>
-      <div class="preco">R$ 200<span>/mês</span></div>
-    </div>
-    <div class="faixa">
-      <div class="nome">Empresa Equipe</div>
-      <div class="detalhe">até 10 pessoas · 15 GB</div>
-      <div class="preco">R$ 400<span>/mês</span></div>
-    </div>
-  </div>
-  <p class="sub" style="margin-top:1rem;margin-bottom:0;font-style:italic">Mais de 10 pessoas na empresa? Fala com a gente.</p>
-</section>
-
-<section class="section">
-  <h2>Precisa de mais espaço?</h2>
-  <p class="sub">Chegou no limite da sua faixa? Compra um bloco extra sem precisar trocar de plano.</p>
-  <div class="faixas">
-    <div class="faixa">
-      <div class="nome">+5 GB extra</div>
-      <div class="detalhe">Some ao espaço da sua faixa atual</div>
-      <div class="preco">R$ 30<span>/mês</span></div>
-    </div>
-  </div>
 </section>
 
 <section class="cta">
-  <h2>Quer ativar algum plano?</h2>
-  <p>A cobrança automática ainda não está pronta — fala com a gente por email que ativamos pra você.</p>
-  <a class="btn" href="mailto:safrabook.app@gmail.com?subject=Quero%20ativar%20um%20plano%20SafraBook">✉️ Falar com a gente</a>
+  <h2>Quer saber mais?</h2>
+  <p>Os planos pagos ainda estão sendo desenhados — se algum desses recursos faz falta pra você agora, fala com a gente.</p>
+  <a class="btn" href="mailto:safrabook.app@gmail.com?subject=Interesse%20nos%20planos%20SafraBook">✉️ Falar com a gente</a>
 </section>
 
 <footer>
