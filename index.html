@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>SafraBook — Sua fazenda no mapa</title>
-  <meta name="description" content="Diagnóstico automático de CAR, fotos georreferenciadas por talhão, clima em tempo real e a comunidade do agro brasileiro num só lugar.">
+  <meta name="description" content="Sua fazenda no mapa pelo CAR, fotos com local e data gravados, relatório em PDF e a equipe registrando o dia junto com você.">
   <link rel="icon" href="/favicon.png" type="image/png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -379,6 +379,50 @@
     .galeria-phone img { display: block; width: 100%; height: auto; }
     .galeria-item p { font-size: 0.85rem; color: var(--gray); line-height: 1.5; }
 
+    /* Telas desenhadas em HTML, pras partes do app que ainda nao tem print.
+       Usam as cores reais do aplicativo (#1B4332 / #D4A017). */
+    .tela { background: #fff; aspect-ratio: 9 / 17; display: flex; flex-direction: column;
+            font-size: 11px; color: #1C1C1E; text-align: left; overflow: hidden; }
+    .tela-topo { background: #1B4332; padding: 9px 11px; display: flex;
+                 align-items: center; justify-content: space-between; gap: 6px; }
+    .tela-topo b { color: #fff; font-size: 12px; display: block; font-weight: 800; }
+    .tela-topo span { color: rgba(255,255,255,.72); font-size: 9px; }
+    .tela-topo em { background: rgba(255,255,255,.15); border-radius: 99px; padding: 2px 7px;
+                    color: #fff; font-size: 9px; font-style: normal; font-weight: 700; white-space: nowrap; }
+    .tela-faixa { background: #FEF9E7; border-bottom: 1px solid #F3E1A6; padding: 8px 11px;
+                  display: flex; align-items: center; justify-content: space-between; gap: 6px; }
+    .tela-faixa b { color: #1B4332; font-size: 10.5px; display: block; font-weight: 800; }
+    .tela-faixa span { color: #6B6151; font-size: 9px; }
+    .tela-faixa i { background: #D4A017; color: #1C1C1E; font-style: normal; font-weight: 800;
+                    font-size: 9px; border-radius: 99px; padding: 5px 9px; white-space: nowrap; }
+    .tela-corpo { flex: 1; padding: 9px 11px; display: flex; flex-direction: column; gap: 8px; overflow: hidden; }
+    .tela-rotulo { font-size: 8px; font-weight: 800; letter-spacing: .09em;
+                   text-transform: uppercase; color: #9A9080; }
+    .tela-linha { display: grid; grid-template-columns: 34px 1fr; gap: 8px; align-items: center; }
+    .tela-linha.simples { grid-template-columns: 1fr auto; }
+    .tela-mini { width: 34px; height: 34px; border-radius: 7px; background: #E8F0EB;
+                 display: grid; place-items: center; font-size: 15px; }
+    .tela-linha b { font-size: 10px; display: block; color: #1C1C1E; font-weight: 700; }
+    .tela-linha span { font-size: 8.5px; color: #7D8570; display: block; }
+    .tela-linha u { font-size: 7.5px; color: #2F6B4F; background: #EAF3EE; border-radius: 3px;
+                    padding: 1px 4px; text-decoration: none; display: inline-block; margin-top: 2px; }
+    .tela-linha i.pill { background: #1B4332; color: #fff; font-style: normal; font-weight: 800;
+                         font-size: 8.5px; border-radius: 99px; padding: 4px 9px; }
+    .tela-card { border: 1px solid #F0EDE4; border-radius: 10px; padding: 9px; }
+    .tela-cardtopo { display: flex; justify-content: space-between; align-items: center; }
+    .tela-cardtopo b { color: #1B4332; font-size: 10px; font-weight: 800; }
+    .tela-cardtopo span { font-size: 8px; color: #1B4332; background: #E8F0EB;
+                          border-radius: 99px; padding: 3px 7px; }
+    .grafico { display: flex; justify-content: space-around; align-items: flex-end; margin-top: 10px; }
+    .g-mes { text-align: center; }
+    .g-barras { display: flex; align-items: flex-end; gap: 3px; height: 76px; }
+    .g-barras i { width: 13px; border-radius: 2px; display: block; }
+    .g-mes span { font-size: 8px; color: #5A5344; display: block; margin-top: 4px; font-weight: 600; }
+    .g-legenda { display: flex; gap: 10px; justify-content: center; margin-top: 8px; }
+    .g-legenda em { font-style: normal; font-size: 8px; color: #5A5344; display: flex;
+                    align-items: center; gap: 4px; }
+    .g-legenda i { width: 7px; height: 7px; border-radius: 2px; display: block; }
+
     /* ── RELATÓRIO ── */
     .relatorio {
       background: var(--bg);
@@ -664,13 +708,13 @@
     <h1>
       Sua fazenda<br>
       <span class="yl">no mapa.</span><br>
-      <span class="blu">Compare, veja e conecte.</span>
+      <span class="blu">O serviço do dia, com prova.</span>
     </h1>
 
     <p>
-      Diagnóstico automático de CAR, fotos georreferenciadas de cada
-      talhão ano a ano, clima em tempo real e a comunidade do agro
-      brasileiro num só lugar.
+      A propriedade desenhada pelo número do CAR, fotos com local e data
+      gravados dentro delas, e a sua equipe registrando o serviço junto
+      com você — num só lugar.
     </p>
 
     <div class="cta-btns">
@@ -722,9 +766,9 @@
     </div>
 
     <div class="card blue">
-      <span class="card-icon">🗺️</span>
-      <h3>Diagnóstico automático de CAR</h3>
-      <p>Área delimitada automaticamente via SICAR, com fazendas vizinhas e anúncios ativos na sua região.</p>
+      <span class="card-icon">🤝</span>
+      <h3>Sua equipe registrando junto</h3>
+      <p>Chame funcionários e prestadores por um link no WhatsApp. Cada um registra o que fez, e a fazenda vai juntando um histórico que ninguém teria sozinho.</p>
     </div>
 
     <div class="card">
@@ -757,6 +801,24 @@
       <p>Escolha as fotos de um talhão ou período, adicione observações e gere um relatório pronto pra enviar pro cliente ou pro banco.</p>
     </div>
 
+    <div class="card">
+      <span class="card-icon">🗓️</span>
+      <h3>O dia de trabalho, junto</h3>
+      <p>As fotos do dia aparecem agrupadas e um botão manda tudo de uma vez pra quem precisa ver. Sem escolher foto por foto.</p>
+    </div>
+
+    <div class="card yellow">
+      <span class="card-icon">🌧️</span>
+      <h3>Pluviômetro da fazenda</h3>
+      <p>Anote a chuva de cada ponto da propriedade. Previsão erra; o balde não. Sai em PDF e planilha pra mandar pro vizinho.</p>
+    </div>
+
+    <div class="card">
+      <span class="card-icon">📋</span>
+      <h3>Pedidos que não somem</h3>
+      <p>Quem está no campo anota o que falta; quem compra marca comprado e entregue. A lista para de morar no meio da conversa do WhatsApp.</p>
+    </div>
+
   </div>
 </section>
 
@@ -768,16 +830,64 @@
     <div class="galeria-scroll">
       <div class="galeria-item">
         <div class="galeria-phone"><img src="/img/screenshot-mapa.jpg" alt="Mapa da fazenda no SafraBook" loading="lazy"></div>
-        <p>Sua fazenda no mapa, com diagnóstico automático do CAR</p>
+        <p>Sua fazenda desenhada no mapa pelo número do CAR</p>
       </div>
+
+      <div class="galeria-item">
+        <div class="galeria-phone">
+          <div class="tela">
+            <div class="tela-topo">
+              <div><b>SafraBook</b><span>Terça, 19 de setembro</span></div>
+              <em>🌿 Santana</em>
+            </div>
+            <div class="tela-faixa">
+              <div><b>3 fotos de hoje</b><span>Nenhuma foi mandada ainda</span></div>
+              <i>Mandar o dia</i>
+            </div>
+            <div class="tela-corpo">
+              <div class="tela-rotulo">Hoje</div>
+              <div class="tela-linha"><div class="tela-mini">🚜</div><div><b>Roçada — Talhão 3</b><span>14:02 · Santana do Arvoredo</span><u>local gravado</u></div></div>
+              <div class="tela-linha"><div class="tela-mini">💧</div><div><b>Bebedouro do fundo</b><span>09:15 · Santana do Arvoredo</span><u>local gravado</u></div></div>
+              <div class="tela-linha"><div class="tela-mini">🪵</div><div><b>Cerca caída — mourão 12</b><span>06:42 · Santana do Arvoredo</span><u>local gravado</u></div></div>
+            </div>
+          </div>
+        </div>
+        <p>O dia inteiro numa tela — e um botão pra mandar tudo</p>
+      </div>
+
+      <div class="galeria-item">
+        <div class="galeria-phone">
+          <div class="tela">
+            <div class="tela-topo"><div><b>Chuva</b><span>Santana do Arvoredo</span></div></div>
+            <div class="tela-corpo">
+              <div class="tela-card">
+                <div class="tela-cardtopo"><b>Últimos 3 meses</b><span>📄 PDF &nbsp; 📊 CSV</span></div>
+                <div class="grafico">
+                  <div class="g-mes"><div class="g-barras"><i style="height:26px;background:#1B4332"></i><i style="height:14px;background:#D4A017"></i></div><span>jul</span></div>
+                  <div class="g-mes"><div class="g-barras"><i style="height:48px;background:#1B4332"></i><i style="height:33px;background:#D4A017"></i></div><span>ago</span></div>
+                  <div class="g-mes"><div class="g-barras"><i style="height:72px;background:#1B4332"></i><i style="height:55px;background:#D4A017"></i></div><span>set</span></div>
+                </div>
+                <div class="g-legenda"><em><i style="background:#1B4332"></i>Sede</em><em><i style="background:#D4A017"></i>Fundo</em></div>
+              </div>
+              <div class="tela-rotulo">Pontos de medição</div>
+              <div class="tela-linha simples"><div><b>Sede</b><span>146 mm no mês · última: 32 mm hoje</span></div><i class="pill">Anotar</i></div>
+              <div class="tela-linha simples"><div><b>Fundo</b><span>108 mm no mês · última: 18 mm hoje</span></div><i class="pill">Anotar</i></div>
+            </div>
+          </div>
+        </div>
+        <p>Quanto choveu de verdade, em cada canto da fazenda</p>
+      </div>
+
       <div class="galeria-item">
         <div class="galeria-phone"><img src="/img/screenshot-camera-gps.jpg" alt="Câmera com GPS do SafraBook" loading="lazy"></div>
-        <p>Fotos georreferenciadas de alta precisão, direto no talhão</p>
+        <p>Foto com local, data e hora gravados dentro dela</p>
       </div>
+
       <div class="galeria-item">
-        <div class="galeria-phone"><img src="/img/screenshot-cambio.jpg" alt="Cotações de câmbio no SafraBook" loading="lazy"></div>
-        <p>Câmbio, Chicago e CEPEA em tempo real</p>
+        <div class="galeria-phone"><img src="/img/relatorio-exemplo.jpg" alt="Relatório em PDF gerado pelo SafraBook" loading="lazy"></div>
+        <p>Relatório pronto pra mandar no WhatsApp</p>
       </div>
+
       <div class="galeria-item">
         <div class="galeria-phone"><img src="/img/screenshot-cepea.jpg" alt="Preços CEPEA por região no SafraBook" loading="lazy"></div>
         <p>Preço por região, sem sair do app</p>

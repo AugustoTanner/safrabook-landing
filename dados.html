@@ -334,8 +334,8 @@
 <!-- SAFRA POR ESTADO -->
 <section class="section">
   <p class="section-label">CONAB · série histórica oficial</p>
-  <h2>Produção por estado</h2>
-  <p class="section-desc">Escolha uma cultura pra ver como cada estado contribui na safra mais recente, e a tendência de produção nacional ao longo dos anos.</p>
+  <h2>Produção de grãos por estado</h2>
+  <p class="section-desc">Escolha uma cultura pra ver como cada estado contribui na safra mais recente, e a evolução da produção nacional ao longo dos anos. A série é da CONAB, que acompanha lavoura — <strong>pecuária não entra aqui</strong>; boi e bezerro aparecem só nos preços, acima.</p>
   <div class="produto-select">
     <div class="produto-rapidos" id="produtoRapidos"></div>
     <div class="produto-dropdown-wrap">
@@ -732,14 +732,19 @@ async function selecionarProduto(produto) {
       <button class="ver-mais-btn" id="btnVerMaisUf">Ver mais ${estadosOcultos.length} estados ▾</button>
     ` : ''}
     <div class="chart-wrap">
+      <div class="chart-title">Produção nacional por safra (mil t)</div>
+      <div class="chart-sub">CONAB · soma de todos os estados, série histórica completa</div>
+      <div id="chartProducao"></div>
+    </div>
+    <div class="chart-wrap" style="margin-top:1rem">
       <div class="chart-title">Produtividade nacional por safra (kg/ha)</div>
-      <div class="chart-sub">CONAB · produção total ÷ área plantada total, série histórica completa</div>
+      <div class="chart-sub">CONAB · produção total ÷ área plantada total — quanto cada hectare rendeu</div>
       <div id="chartProdutividade"></div>
     </div>
     <div class="chart-wrap" style="margin-top:1rem">
       <div class="chart-title">Evolução do preço CEPEA (R$)</div>
       <div class="chart-sub">
-        ${temPreco ? 'Preço diário' : 'Ainda sem preço pra essa cultura'} — começou a ser registrado em 20/08/2026, cresce um dia por vez.
+        ${temPreco ? 'Preço diário CEPEA/ESALQ' : 'Ainda sem preço pra essa cultura'} — a série começou em 20/08/2026 e vai crescendo um dia por vez (a CEPEA não abre histórico retroativo de graça).
       </div>
       <div id="chartPreco"></div>
     </div>
@@ -760,6 +765,7 @@ async function selecionarProduto(produto) {
   elCallout.innerHTML = calloutHtml;
   elCallout.style.display = calloutHtml ? 'block' : 'none';
 
+  desenharLinhaSimples('chartProducao', anos, anos.map(a => porAno[a]), v => `${fmt(v, 0)} mil t`);
   desenharLinhaSimples('chartProdutividade', anos, anos.map(a => produtividadePorAno[a]), v => `${fmt(v, 0)} kg/ha`);
   if (temPreco) desenharPrecoChart('chartPreco', categoriasPreco, precoPorSafra);
   else document.getElementById('chartPreco').innerHTML = '<div class="erro-msg">Sem dado de preço pra essa cultura ainda.</div>';
